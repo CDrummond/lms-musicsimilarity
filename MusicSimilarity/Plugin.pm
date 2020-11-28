@@ -161,17 +161,17 @@ sub _getPreviousTracks {
     return unless $client;
 
     $client = $client->master;
-    my ($trackId, $artist, $title, $duration, $mbid, $artist_mbid, $tracks);
 
-    foreach (reverse(@{ Slim::Player::Playlist::playList($client) })) {
-        ($artist, $title, $duration, $trackId, $mbid, $artist_mbid) = Slim::Plugin::DontStopTheMusic::Plugin->getMixablePropertiesFromTrack($client, $_);
-        next unless defined $artist && defined $title && !exists($seedsHash{$trackId});
-        my ($trackObj) = Slim::Schema->find('Track', $trackId);
-        if ($trackObj) {
-            push @$tracks, $trackObj;
-            if (scalar @$tracks >= $count) {
-                return $tracks;
-            }
+    my $tracks = ();
+    for my $track (reverse @{ Slim::Player::Playlist::playList($client) } ) {
+        if (!blessed $track) {
+            $track = Slim::Schema->objectForUrl($track);
+        }
+
+        next unless blessed $track;
+        push @$tracks, $track;
+        if (scalar @$tracks >= $count) {
+            return $tracks;
         }
     }
     return $tracks;
@@ -193,7 +193,6 @@ sub _getMixData {
     }
 
     if ($previousTracks and scalar @previous > 0) {
-        @previous = reverse(@previous);
         foreach my $track (@previous) {
             push @previous_paths, $track->url;
         }
