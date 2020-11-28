@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<extension>
+	<id>e09bbd3f-1727-4339-864d-0bf4d7aa8fcc</id>
+	<name>MUSICSIMILARITY</name>
+	<module>Plugins::MusicSimilarity::Plugin</module>
+	<version>0.0.1</version>
+	<description>MUSICSIMILARITY_DESC</description>
+	<creator>Craig Drummond</creator>
+	<defaultState>
+		<mac>enabled</mac>
+		<win>enabled</win>
+		<other>enabled</other>
+	</defaultState>
+	<homepageURL>https://github.com/CDrummond/lms-musicsimilarity</homepageURL>
+	<type>2</type>
+	<targetApplication>
+		<id>Logitech Media Server</id>
+		<minVersion>7.9</minVersion>
+		<maxVersion>*</maxVersion>
+	</targetApplication>
+</extension>

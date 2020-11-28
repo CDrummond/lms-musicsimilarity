@@ -1,0 +1,45 @@
+[% PROCESS settings/header.html %]
+
+    [% WRAPPER settingSection %]
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_FILTER_GENRES" desc="MUSICSIMILARITY_FILTER_GENRES_DESC" %]
+            <select class="stdedit" name="pref_filter_genres" id="filter_genres">
+                <option [% IF NOT prefs.filter_genres %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
+                <option [% IF prefs.filter_genres %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
+            </select>
+        [% END %]
+
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_FILTER_XMAS" desc="MUSICSIMILARITY_FILTER_XMAS_DESC" %]
+            <select class="stdedit" name="pref_filter_xmas" id="filter_xmas">
+                <option [% IF NOT prefs.filter_xmas %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
+                <option [% IF prefs.filter_xmas %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
+            </select>
+        [% END %]
+
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_EXCLUDE_ARTISTS" desc="MUSICSIMILARITY_EXCLUDE_ARTISTS_DESC" %]
+            <input type="text" class="stdedit" name="pref_exclude_artists" id="exclude_artists" value="[% prefs.pref_exclude_artists %]" size="80">
+        [% END %]
+
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_EXCLUDE_ALBUMS" desc="MUSICSIMILARITY_EXCLUDE_ALBUMS_DESC" %]
+            <input type="text" class="stdedit" name="pref_exclude_albums" id="exclude_albums" value="[% prefs.pref_exclude_albums %]" size="80">
+        [% END %]
+
+        [% IF prefs.exists('pref_min_duration') %]
+            [% WRAPPER settingGroup title="MUSICSIMILARITY_MIN_DURATION" desc="MUSICSIMILARITY_MIN_DURATION_DESC" %]
+                <input type="text" class="stdedit" name="pref_min_duration" id="min_duration" value="[% prefs.pref_min_duration %]" size="5">
+            [% END %]
+        [% END %]
+
+        [% IF prefs.exists('pref_max_duration') %]
+            [% WRAPPER settingGroup title="MUSICSIMILARITY_MAX_DURATION" desc="MUSICSIMILARITY_MAX_DURATION_DESC" %]
+                <input type="text" class="stdedit" name="pref_max_duration" id="max_duration" value="[% prefs.pref_max_duration %]" size="5">
+            [% END %]
+        [% END %]
+
+        [% IF prefs.exists('pref_port') %]
+            [% WRAPPER settingGroup title="MUSICSIMILARITY_MUSLY_PORT" desc="MUSICSIMILARITY_MUSLY_PORT_DESC" %]
+                <input type="text" class="stdedit" name="pref_port" id="port" value="[% prefs.pref_port %]" size="5">
+            [% END %]
+        [% END %]
+    [% END %]
+
+[% PROCESS settings/footer.html %]
