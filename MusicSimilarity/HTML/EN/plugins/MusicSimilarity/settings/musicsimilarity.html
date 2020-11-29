@@ -36,7 +36,7 @@
         [% END %]
 
         [% IF prefs.exists('pref_port') %]
-            [% WRAPPER settingGroup title="MUSICSIMILARITY_MUSLY_PORT" desc="MUSICSIMILARITY_MUSLY_PORT_DESC" %]
+            [% WRAPPER settingGroup title="MUSICSIMILARITY_API_PORT" desc="MUSICSIMILARITY_API_PORT_DESC" %]
                 <input type="text" class="stdedit" name="pref_port" id="port" value="[% prefs.pref_port %]" size="5">
             [% END %]
         [% END %]
