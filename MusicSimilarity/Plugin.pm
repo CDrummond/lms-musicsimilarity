@@ -168,7 +168,8 @@ sub _getPreviousTracks {
             $track = Slim::Schema->objectForUrl($track);
         }
 
-        next unless blessed $track;
+        next unless blessed $track && !exists($seedsHash{ $track->id });
+
         push @$tracks, $track;
         if (scalar @$tracks >= $count) {
             return $tracks;
