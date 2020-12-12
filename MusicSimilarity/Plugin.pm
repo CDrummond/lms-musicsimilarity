@@ -30,7 +30,6 @@ if ( main::WEBUI ) {
 use Plugins::MusicSimilarity::Settings;
 
 my $initialized = 0;
-my @genreSets = ();
 my $NUM_TRACKS_TO_USE = 5;
 my $NUM_SEED_TRACKS = 5;
 my $MAX_PREVIOUS_TRACKS = 100;
