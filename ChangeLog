@@ -4,6 +4,7 @@
 2. Have API do shuffling, and therefore use all of its tracks.
 3. Renamed to 'MusicSimilarity' due to allowing usage of Musly or Essentia.
 4. Increase previous track count to 200.
+5. Add 'Create similarity mix' to 'More' menus.
 
 0.0.1
 -----
