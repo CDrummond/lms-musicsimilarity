@@ -327,12 +327,7 @@ sub _objectInfoHandler {
             modeParams => {
                 $special->{actionParam} => $obj->id,
             },
-        },
-
-        #TODO: Not working? Cannot find html???
-        #web  => {
-        #    url   => 'plugins/MusicSimilarity/musicsimilarity_mix.html?' . $special->{urlKey} . '=' . $obj->id,
-        #},
+        }
     };
 }
 
