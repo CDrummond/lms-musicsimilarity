@@ -3,7 +3,7 @@ package Plugins::MusicSimilarity::Settings;
 #
 # LMS Music Similarity
 #
-# (c) Craig Drummond, 2020
+# (c) 2020-2021 Craig Drummond
 #
 # Licence: GPL v3
 #
