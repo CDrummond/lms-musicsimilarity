@@ -53,7 +53,7 @@ sub initPlugin {
     return 1 if $initialized;
 
     $prefs->init({
-        filter_genres   => 1,
+        filter_genres   => 0,
         filter_xmas     => 1,
         exclude_artists => '',
         exclude_albums  => '',
@@ -246,7 +246,7 @@ sub _getMixData {
                         count         => $trackCount,
                         format        => 'text',
                         filtergenre   => $prefs->get('filter_genres') || 0,
-                        filterxmas    => $prefs->get('filter_xmas') || 0,
+                        filterxmas    => $prefs->get('filter_xmas') || 1,
                         min           => $prefs->get('min_duration') || 0,
                         max           => $prefs->get('max_duration') || 0,
                         track         => [@track_paths],
@@ -259,7 +259,6 @@ sub _getMixData {
     main::DEBUGLOG && $log->debug("Request $jsonData");
     return $jsonData;
 }
-
 
 sub trackInfoHandler {
     my $return = _objectInfoHandler( 'track', @_ );
