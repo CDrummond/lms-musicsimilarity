@@ -55,8 +55,6 @@ sub initPlugin {
     $prefs->init({
         filter_genres   => 0,
         filter_xmas     => 1,
-        exclude_artists => '',
-        exclude_albums  => '',
         port            => 11000,
         min_duration    => 0,
         max_duration    => 0
@@ -212,8 +210,6 @@ sub _getMixData {
     my @mix = ();
     my @track_paths = ();
     my @previous_paths = ();
-    my @exclude_artists = ();
-    my @exclude_albums = ();
 
     foreach my $track (@tracks) {
         push @track_paths, $track->url;
@@ -222,22 +218,6 @@ sub _getMixData {
     if ($previousTracks and scalar @previous > 0) {
         foreach my $track (@previous) {
             push @previous_paths, $track->url;
-        }
-    }
-
-    my $exclude = $prefs->get('exclude_artists');
-    if ($exclude) {
-        my @exclude_list = split(/,/, $exclude);
-        foreach my $ex (@exclude_list) {
-            push @exclude_artists, $ex;
-        }
-    }
-
-    $exclude = $prefs->get('exclude_albums');
-    if ($exclude) {
-        my @exclude_list = split(/,/, $exclude);
-        foreach my $ex (@exclude_list) {
-            push @exclude_albums, $ex;
         }
     }
 
@@ -251,8 +231,6 @@ sub _getMixData {
                         max           => $prefs->get('max_duration') || 0,
                         track         => [@track_paths],
                         previous      => [@previous_paths],
-                        excludeartist => [@exclude_artists],
-                        excludealbum  => [@exclude_albums],
                         shuffle       => $shuffle
                     });
     $http->timeout($prefs->get('timeout') || 5);

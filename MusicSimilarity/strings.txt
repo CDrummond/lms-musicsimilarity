@@ -6,18 +6,6 @@ MUSICSIMILARITY
 MUSICSIMILARITY_DESC
 	EN	Music Similarity Mixer for Don't Stop The Music
 
-MUSICSIMILARITY_EXCLUDE_ARTISTS
-	EN	Exclude artists from mixes
-
-MUSICSIMILARITY_EXCLUDE_ARTISTS_DESC
-	EN	Comma-separated list of artist names to exclude from mixes
-
-MUSICSIMILARITY_EXCLUDE_ALBUMS
-	EN	Exclude albums from mixes
-
-MUSICSIMILARITY_EXCLUDE_ALBUMS_DESC
-	EN	Comma-separated list of albums to exclude from mixes. Use 'AlbumArtist - Album'
-
 MUSICSIMILARITY_FILTER_GENRES
 	EN	Restrict genres
 

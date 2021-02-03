@@ -6,6 +6,7 @@
 4. Increase previous track count to 200.
 5. Add 'Create similarity mix' to 'More' menus.
 6. Disable genre filtering by default.
+7. Remove exclude artist and albums options, use ignore feature of API server.
 
 0.0.1
 -----
