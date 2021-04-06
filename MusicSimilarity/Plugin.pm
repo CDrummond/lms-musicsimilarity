@@ -151,13 +151,17 @@ sub postinitPlugin {
                             foreach my $track (@$tracks) {
                                 main::DEBUGLOG && $log->debug("..." . $track);
                             }
-                            $cb->($client, $tracks);
+                            if (scalar @$tracks > 0) {
+                                $cb->($client, $tracks);
+                            } else {
+                                _mixFailed($client, $cb);
+                            }
                         },
                         sub {
                             my $response = shift;
                             my $error  = $response->error;
                             main::DEBUGLOG && $log->debug("Failed to fetch URL: $error");
-                            $cb->($client, []);
+                            _mixFailed($client, $cb);
                         }
                     )->post($url, 'Content-Type' => 'application/json;charset=utf-8', $jsonData);
                 }
@@ -174,6 +178,17 @@ sub prefName {
 sub title {
     my $class = shift;
     return 'MusicSimilarity';
+}
+
+sub _mixFailed {
+    my ($client, $cb) = @_;
+    if (exists $INC{'Plugins/LastMix/DontStopTheMusic.pm'}) {
+        main::DEBUGLOG && $log->debug("Call through to LastMix");
+        Plugins::LastMix::DontStopTheMusic::please($client, $cb);
+    } else {
+        main::DEBUGLOG && $log->debug("Return empty list");
+        $cb->($client, []);
+    }
 }
 
 sub _getPreviousTracks {
