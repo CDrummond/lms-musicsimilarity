@@ -33,6 +33,7 @@ my $initialized = 0;
 my $NUM_TRACKS_TO_USE = 5;
 my $NUM_SEED_TRACKS = 5;
 my $MAX_PREVIOUS_TRACKS = 200;
+my $DEF_MAX_PREVIOUS_TRACKS = 100;
 my $NUM_MIX_TRACKS = 50;
 
 my $log = Slim::Utils::Log->addLogCategory({
@@ -53,11 +54,14 @@ sub initPlugin {
     return 1 if $initialized;
 
     $prefs->init({
-        filter_genres   => 0,
-        filter_xmas     => 1,
-        port            => 11000,
-        min_duration    => 0,
-        max_duration    => 0
+        filter_genres    => 0,
+        filter_xmas      => 1,
+        port             => 11000,
+        min_duration     => 0,
+        max_duration     => 0,
+        no_repeat_artist => 15,
+        no_repeat_album  => 25,
+        no_repeat_track  => $DEF_MAX_PREVIOUS_TRACKS
     });
 
     if ( main::WEBUI ) {
@@ -119,7 +123,11 @@ sub postinitPlugin {
                 }
 
                 if (scalar @seedsToUse > 0) {
-                    my $previousTracks = _getPreviousTracks($client, \@seedIds, $MAX_PREVIOUS_TRACKS);
+                    my $maxNumPrevTracks => $prefs->get('no_repeat_track');
+                    if ($maxNumPrevTracks<0 || $maxNumPrevTracks>$MAX_PREVIOUS_TRACKS) {
+                        $maxNumPrevTracks = $DEF_MAX_PREVIOUS_TRACKS;
+                    }
+                    my $previousTracks = _getPreviousTracks($client, \@seedIds, $maxNumPrevTracks);
                     main::DEBUGLOG && $log->debug("Num tracks to previous: " . ($previousTracks ? scalar(@$previousTracks) : 0));
 
                     my $jsonData = _getMixData(\@seedsToUse, $previousTracks ? \@$previousTracks : undef, $NUM_TRACKS_TO_USE, 1);
@@ -200,16 +208,18 @@ sub _getPreviousTracks {
     $client = $client->master;
 
     my $tracks = ();
-    for my $track (reverse @{ Slim::Player::Playlist::playList($client) } ) {
-        if (!blessed $track) {
-            $track = Slim::Schema->objectForUrl($track);
-        }
+    if ($count>0) {
+        for my $track (reverse @{ Slim::Player::Playlist::playList($client) } ) {
+            if (!blessed $track) {
+                $track = Slim::Schema->objectForUrl($track);
+            }
 
-        next unless blessed $track && !exists($seedsHash{ $track->id });
+            next unless blessed $track && !exists($seedsHash{ $track->id });
 
-        push @$tracks, $track;
-        if (scalar @$tracks >= $count) {
-            return $tracks;
+            push @$tracks, $track;
+            if (scalar @$tracks >= $count) {
+                return $tracks;
+            }
         }
     }
     return $tracks;
@@ -246,7 +256,9 @@ sub _getMixData {
                         max           => $prefs->get('max_duration') || 0,
                         track         => [@track_paths],
                         previous      => [@previous_paths],
-                        shuffle       => $shuffle
+                        shuffle       => $shuffle,
+                        norepart      => $prefs->get('no_repeat_artist'),
+                        norepalb      => $prefs->get('no_repeat_album')
                     });
     $http->timeout($prefs->get('timeout') || 5);
     main::DEBUGLOG && $log->debug("Request $jsonData");

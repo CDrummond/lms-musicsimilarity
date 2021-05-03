@@ -15,23 +15,30 @@
             </select>
         [% END %]
 
-        [% IF prefs.exists('pref_min_duration') %]
-            [% WRAPPER settingGroup title="MUSICSIMILARITY_MIN_DURATION" desc="MUSICSIMILARITY_MIN_DURATION_DESC" %]
-                <input type="text" class="stdedit" name="pref_min_duration" id="min_duration" value="[% prefs.pref_min_duration %]" size="5">
-            [% END %]
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_NO_REPEAT_ARTIST" desc="MUSICSIMILARITY_NO_REPEAT_ARTIST_DESC" %]
+            <input type="text" class="stdedit sliderInput_0_200_1" name="pref_no_repeat_artist" id="no_repeat_artist" value="[% prefs.pref_no_repeat_artist %]" size="5">
         [% END %]
 
-        [% IF prefs.exists('pref_max_duration') %]
-            [% WRAPPER settingGroup title="MUSICSIMILARITY_MAX_DURATION" desc="MUSICSIMILARITY_MAX_DURATION_DESC" %]
-                <input type="text" class="stdedit" name="pref_max_duration" id="max_duration" value="[% prefs.pref_max_duration %]" size="5">
-            [% END %]
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_NO_REPEAT_ALBUM" desc="MUSICSIMILARITY_NO_REPEAT_ALBUM_DESC" %]
+            <input type="text" class="stdedit sliderInput_0_200_1" name="pref_no_repeat_album" id="no_repeat_album" value="[% prefs.pref_no_repeat_album %]" size="5">
         [% END %]
 
-        [% IF prefs.exists('pref_port') %]
-            [% WRAPPER settingGroup title="MUSICSIMILARITY_API_PORT" desc="MUSICSIMILARITY_API_PORT_DESC" %]
-                <input type="text" class="stdedit" name="pref_port" id="port" value="[% prefs.pref_port %]" size="5">
-            [% END %]
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_NO_REPEAT_TRACK" desc="MUSICSIMILARITY_NO_REPEAT_TRACK_DESC" %]
+            <input type="text" class="stdedit sliderInput_0_200_1" name="pref_no_repeat_track" id="no_repeat_track" value="[% prefs.pref_no_repeat_track %]" size="5">
         [% END %]
+
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_MIN_DURATION" desc="MUSICSIMILARITY_MIN_DURATION_DESC" %]
+            <input type="text" class="stdedit" name="pref_min_duration" id="min_duration" value="[% prefs.pref_min_duration %]" size="5">
+        [% END %]
+
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_MAX_DURATION" desc="MUSICSIMILARITY_MAX_DURATION_DESC" %]
+            <input type="text" class="stdedit" name="pref_max_duration" id="max_duration" value="[% prefs.pref_max_duration %]" size="5">
+        [% END %]
+
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_API_PORT" desc="MUSICSIMILARITY_API_PORT_DESC" %]
+            <input type="text" class="stdedit" name="pref_port" id="port" value="[% prefs.pref_port %]" size="5">
+        [% END %]
+
     [% END %]
 
 [% PROCESS settings/footer.html %]
