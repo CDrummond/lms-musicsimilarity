@@ -105,6 +105,7 @@ sub postinitPlugin {
         Slim::Plugin::DontStopTheMusic::Plugin->registerHandler('MUSICSIMILARITY_MIX', sub {
             my ($client, $cb) = @_;
 
+            main::DEBUGLOG && $log->debug("Get similar tracks");
             my $seedTracks = Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client, $NUM_SEED_TRACKS);
             my $tracks = [];
 
@@ -123,7 +124,7 @@ sub postinitPlugin {
                 }
 
                 if (scalar @seedsToUse > 0) {
-                    my $maxNumPrevTracks => $prefs->get('no_repeat_track');
+                    my $maxNumPrevTracks = $prefs->get('no_repeat_track');
                     if ($maxNumPrevTracks<0 || $maxNumPrevTracks>$MAX_PREVIOUS_TRACKS) {
                         $maxNumPrevTracks = $DEF_MAX_PREVIOUS_TRACKS;
                     }
@@ -155,14 +156,18 @@ sub postinitPlugin {
                                 }
                             }
 
-                            main::DEBUGLOG && $log->debug("Num tracks to use:" . scalar(@$tracks));
-                            foreach my $track (@$tracks) {
-                                main::DEBUGLOG && $log->debug("..." . $track);
-                            }
-                            if (scalar @$tracks > 0) {
-                                $cb->($client, $tracks);
-                            } else {
+                            if (!defined $tracks) {
                                 _mixFailed($client, $cb);
+                            } else {
+                                main::DEBUGLOG && $log->debug("Num tracks to use:" . scalar(@$tracks));
+                                foreach my $track (@$tracks) {
+                                    main::DEBUGLOG && $log->debug("..." . $track);
+                                }
+                                if (scalar @$tracks > 0) {
+                                    $cb->($client, $tracks);
+                                } else {
+                                    _mixFailed($client, $cb);
+                                }
                             }
                         },
                         sub {
@@ -201,6 +206,7 @@ sub _mixFailed {
 
 sub _getPreviousTracks {
     my ($client, $seeIds, $count) = @_;
+    main::DEBUGLOG && $log->debug("Get last " . $count . " tracks");
     my @seeds = ref $seeIds ? @$seeIds : ($seeIds);
     my %seedsHash = map { $_ => 1 } @seeds;
     return unless $client;
