@@ -32,7 +32,7 @@ sub page {
 }
 
 sub prefs {
-	return ($prefs, qw(port filter_genres filter_xmas exclude_artists exclude_albums min_duration max_duration no_repeat_artist no_repeat_album no_repeat_track));
+	return ($prefs, qw(port filter_genres filter_xmas exclude_artists exclude_albums min_duration max_duration no_repeat_artist no_repeat_album no_repeat_track dstm_tracks));
 }
 
 sub handler {

@@ -77,3 +77,9 @@ MUSICSIMILARITY_NO_REPEAT_TRACK
 
 MUSICSIMILARITY_NO_REPEAT_TRACK_DESC
 	EN	Prevent a track from being repeated within the specified limit.
+
+MUSICSIMILARITY_NUM_DSTM_TRACKS
+	EN	Number of mixer tracks
+
+MUSICSIMILARITY_NUM_DSTM_TRACKS_DESC
+	EN	Number of tracks to add to the play queue when run as a mixer for "Don't Stop the Music"

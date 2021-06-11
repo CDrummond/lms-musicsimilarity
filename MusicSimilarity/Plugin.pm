@@ -30,7 +30,7 @@ if ( main::WEBUI ) {
 use Plugins::MusicSimilarity::Settings;
 
 my $initialized = 0;
-my $NUM_TRACKS_TO_USE = 5;
+my $DEF_NUM_DSTM_TRACKS = 5;
 my $NUM_SEED_TRACKS = 5;
 my $MAX_PREVIOUS_TRACKS = 200;
 my $DEF_MAX_PREVIOUS_TRACKS = 100;
@@ -61,7 +61,8 @@ sub initPlugin {
         max_duration     => 0,
         no_repeat_artist => 15,
         no_repeat_album  => 25,
-        no_repeat_track  => $DEF_MAX_PREVIOUS_TRACKS
+        no_repeat_track  => $DEF_MAX_PREVIOUS_TRACKS,
+        dstm_tracks      => $DEF_NUM_DSTM_TRACKS,
     });
 
     if ( main::WEBUI ) {
@@ -131,7 +132,8 @@ sub postinitPlugin {
                     my $previousTracks = _getPreviousTracks($client, \@seedIds, $maxNumPrevTracks);
                     main::DEBUGLOG && $log->debug("Num tracks to previous: " . ($previousTracks ? scalar(@$previousTracks) : 0));
 
-                    my $jsonData = _getMixData(\@seedsToUse, $previousTracks ? \@$previousTracks : undef, $NUM_TRACKS_TO_USE, 1);
+                    my $dstm_tracks = $prefs->get('dstm_tracks') || $DEF_NUM_DSTM_TRACKS;
+                    my $jsonData = _getMixData(\@seedsToUse, $previousTracks ? \@$previousTracks : undef, $dstm_tracks, 1);
                     my $port = $prefs->get('port') || 11000;
                     my $url = "http://localhost:$port/api/similar";
                     Slim::Networking::SimpleAsyncHTTP->new(
