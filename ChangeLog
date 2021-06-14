@@ -3,6 +3,7 @@
 1. If fail to find any tracks, fall through to LastMix (if this is installed).
 2. Make no repeat artist/album/track settings configurable.
 3. Add config item to control number of tracks added in DSTM mode.
+4. Set default API timeout to 30 seconds.
 
 0.0.2
 -----

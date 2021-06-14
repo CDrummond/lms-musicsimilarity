@@ -268,7 +268,7 @@ sub _getMixData {
                         norepart      => $prefs->get('no_repeat_artist'),
                         norepalb      => $prefs->get('no_repeat_album')
                     });
-    $http->timeout($prefs->get('timeout') || 5);
+    $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");
     return $jsonData;
 }
