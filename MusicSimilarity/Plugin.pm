@@ -63,6 +63,7 @@ sub initPlugin {
         no_repeat_album  => 25,
         no_repeat_track  => $DEF_MAX_PREVIOUS_TRACKS,
         dstm_tracks      => $DEF_NUM_DSTM_TRACKS,
+        timeout          => 30
     });
 
     if ( main::WEBUI ) {
