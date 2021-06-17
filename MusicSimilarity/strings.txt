@@ -86,3 +86,9 @@ MUSICSIMILARITY_NUM_DSTM_TRACKS
 
 MUSICSIMILARITY_NUM_DSTM_TRACKS_DESC
 	EN	Number of tracks to add to the play queue when run as a mixer for "Don't Stop the Music"
+
+MUSICSIMILARITY_SIMILAR_TRACKS
+	EN	Similar tracks
+
+MUSICSIMILARITY_SIMILAR_TRACKS_BY_ARTIST
+	EN	Similar tracks by artist

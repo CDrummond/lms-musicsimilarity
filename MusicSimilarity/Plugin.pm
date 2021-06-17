@@ -35,6 +35,7 @@ my $NUM_SEED_TRACKS = 5;
 my $MAX_PREVIOUS_TRACKS = 200;
 my $DEF_MAX_PREVIOUS_TRACKS = 100;
 my $NUM_MIX_TRACKS = 50;
+my $NUM_SIMILAR_TRACKS = 100;
 
 my $log = Slim::Utils::Log->addLogCategory({
     'category'     => 'plugin.musicsimilarity',
@@ -71,24 +72,34 @@ sub initPlugin {
     }
 
     # 'Create similarity mix'....
-    Slim::Control::Request::addDispatch(['musicsimilarity', 'mix'], [1, 1, 1, \&cliMix]);
+    Slim::Control::Request::addDispatch(['musicsimilarity', '_cmd'], [1, 1, 1, \&cliMix]);
 
-    Slim::Menu::TrackInfo->registerInfoProvider( musicsimilarity => (
+    Slim::Menu::TrackInfo->registerInfoProvider( musicsimilaritymix => (
         above    => 'favorites',
         func     => \&trackInfoHandler,
     ) );
 
-    Slim::Menu::AlbumInfo->registerInfoProvider( musicsimilarity => (
+    Slim::Menu::TrackInfo->registerInfoProvider( musicsimilarity => (
+        above    => 'favorites',
+        func     => \&similarTracksHandler,
+    ) );
+
+    #Slim::Menu::TrackInfo->registerInfoProvider( musicsimilaritybyartist => (
+    #    above    => 'favorites',
+    #    func     => \&similarTracksByArtistHandler,
+    #) );
+
+    Slim::Menu::AlbumInfo->registerInfoProvider( musicsimilaritymix => (
         below    => 'addalbum',
         func     => \&albumInfoHandler,
     ) );
 
-    Slim::Menu::ArtistInfo->registerInfoProvider( musicsimilarity => (
+    Slim::Menu::ArtistInfo->registerInfoProvider( musicsimilaritymix => (
         below    => 'addartist',
         func     => \&artistInfoHandler,
     ) );
 
-    Slim::Menu::GenreInfo->registerInfoProvider( musicsimilarity => (
+    Slim::Menu::GenreInfo->registerInfoProvider( musicsimilaritymix => (
         below    => 'addgenre',
         func     => \&genreInfoHandler,
     ) );
@@ -283,24 +294,38 @@ sub _getMixData {
     return $jsonData;
 }
 
+sub _getSimilarData {
+    my $seedTrack = shift;
+    my $byArtist = shift;
+    my $count = shift;
+    my $http = LWP::UserAgent->new;
+    my $jsonData = to_json({
+                        count          => $count,
+                        format         => 'text-url',
+                        min            => $prefs->get('min_duration') || 0,
+                        max            => $prefs->get('max_duration') || 0,
+                        track          => [$seedTrack->url],
+                        filteronartist => $byArtist
+                    });
+    $http->timeout($prefs->get('timeout') || 30);
+    main::DEBUGLOG && $log->debug("Request $jsonData");
+    return $jsonData;
+}
+
 sub trackInfoHandler {
-    my $return = _objectInfoHandler( 'track', @_ );
-    return $return;
+    return _objectInfoHandler( 'track', @_ );
 }
 
 sub albumInfoHandler {
-    my $return = _objectInfoHandler( 'album', @_ );
-    return $return;
+    return _objectInfoHandler( 'album', @_ );
 }
 
 sub artistInfoHandler {
-    my $return = _objectInfoHandler( 'artist', @_ );
-    return $return;
+    return _objectInfoHandler( 'artist', @_ );
 }
 
 sub genreInfoHandler {
-    my $return = _objectInfoHandler( 'genre', @_ );
-    return $return;
+    return _objectInfoHandler( 'genre', @_ );
 }
 
 sub _objectInfoHandler {
@@ -353,12 +378,64 @@ sub _objectInfoHandler {
     };
 }
 
+sub _trackSimilarityHandler {
+    my ( $byArtist, $client, $url, $obj, $remoteMeta, $tags ) = @_;
+    $tags ||= {};
+
+    my $special;
+    $special->{'actionParam'} = 'track_id';
+    $special->{'modeParam'}   = 'track';
+    $special->{'urlKey'}      = 'song';
+
+    return {
+        type      => 'redirect',
+        jive      => {
+            actions => {
+                go => {
+                    player => 0,
+                    cmd    => [ 'musicsimilarity', 'list' ],
+                    params => {
+                        menu     => 1,
+                        useContextMenu => 1,
+                        $special->{actionParam} => $obj->id,
+                        byArtist => $byArtist
+                    },
+                },
+            }
+        },
+        name      => cstring($client, $byArtist == 1 ? 'MUSICSIMILARITY_SIMILAR_TRACKS_BY_ARTIST' : 'MUSICSIMILARITY_SIMILAR_TRACKS'),
+        favorites => 0,
+
+        player => {
+            mode => 'musicsimilarity_list',
+            modeParams => {
+                $special->{actionParam} => $obj->id,
+            },
+        }
+    };
+}
+
+sub similarTracksHandler {
+    return _trackSimilarityHandler( 0, @_ );
+}
+
+sub similarTracksByArtistHandler {
+    return _trackSimilarityHandler( 1, @_ );
+}
+
 sub cliMix {
     my $request = shift;
 
     # check this is the correct query.
-    if ($request->isNotQuery([['musicsimilarity', 'mix']])) {
+    if ($request->isNotQuery([['musicsimilarity']])) {
         $request->setStatusBadDispatch();
+        return;
+    }
+
+    my $cmd = $request->getParam('_cmd');
+
+    if ($request->paramUndefinedOrNotOneOf($cmd, ['mix', 'list']) ) {
+        $request->setStatusBadParams();
         return;
     }
 
@@ -374,14 +451,15 @@ sub cliMix {
     };
 
     my @seedsToUse = ();
+    my $isMix = $cmd eq 'mix';
 
     if ($request->getParam('track_id')) {
         my ($trackObj) = Slim::Schema->find('Track', $request->getParam('track_id'));
         if ($trackObj) {
-            main::DEBUGLOG && $log->debug("Browse Track Seed " . $trackObj->path);
+            main::DEBUGLOG && $log->debug("Similarity Track Seed " . $trackObj->path);
             push @seedsToUse, $trackObj;
         }
-    } else {
+    } elsif ($isMix) {
         my $sql;
         my $col = 'track';
         my $param;
@@ -416,16 +494,17 @@ sub cliMix {
         }
 
         foreach my $trackObj (@seedsToUse) {
-            main::DEBUGLOG && $log->debug("Browse Track Seed " . $trackObj->path);
+            main::DEBUGLOG && $log->debug("Similarity Track Seed " . $trackObj->path);
         }
     }
 
-    main::DEBUGLOG && $log->debug("Num tracks for browse mix:" . scalar(@seedsToUse));
+    main::DEBUGLOG && $log->debug("Num tracks for similarity mix/list: " . scalar(@seedsToUse));
 
     if (scalar @seedsToUse > 0) {
-        my $jsonData = _getMixData(\@seedsToUse, undef, $NUM_MIX_TRACKS * 2, 1, $prefs->get('filter_genres') || 0);
+        my $maxTracks = $isMix ? $NUM_MIX_TRACKS : $NUM_SIMILAR_TRACKS;
+        my $jsonData = $isMix ? _getMixData(\@seedsToUse, undef, $maxTracks * 2, 1, $prefs->get('filter_genres') || 0) : _getSimilarData(@seedsToUse[0], $request->getParam('byArtist') || 0, $maxTracks);
         my $port = $prefs->get('port') || 11000;
-        my $url = "http://localhost:$port/api/similar";
+        my $url = $isMix ? "http://localhost:$port/api/similar" : "http://localhost:$port/api/dump";
         $request->setStatusProcessing();
         Slim::Networking::SimpleAsyncHTTP->new(
             sub {
@@ -436,10 +515,14 @@ sub cliMix {
                 my $count = scalar @songs;
                 my $tracks = ();
 
-                Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
+                if ($isMix) {
+                    Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
+                }
                 my $seedToAdd = @seedsToUse[0];
 
-                Slim::Player::Playlist::fischer_yates_shuffle(\@songs);
+                if ($isMix) {
+                    Slim::Player::Playlist::fischer_yates_shuffle(\@songs);
+                }
 
                 my $tags     = $request->getParam('tags') || 'al';
                 my $menu     = $request->getParam('menu');
@@ -448,11 +531,13 @@ sub cliMix {
                 my $chunkCount = 0;
                 my $useContextMenu = $request->getParam('useContextMenu');
                 my @usableTracks = ();
-                my @ids      = ();
+                my @ids          = ();
 
-                # TODO: Add more?
-                push @usableTracks, $seedToAdd;
-                push @ids, $seedToAdd->id;
+                if ($isMix) {
+                    # TODO: Add more?
+                    push @usableTracks, $seedToAdd;
+                    push @ids, $seedToAdd->id;
+                }
 
                 foreach my $track (@songs) {
                     # Bug 4281 - need to convert from UTF-8 on Windows.
@@ -462,11 +547,11 @@ sub cliMix {
 
                     if ( -e $track || -e Slim::Utils::Unicode::utf8encode_locale($track) || index($track, 'file:///')==0) {
                         my $trackObj = Slim::Schema->objectForUrl(Slim::Utils::Misc::fileURLFromPath($track));
-                        if (blessed $trackObj && $trackObj->id != $seedToAdd->id) {
+                        if (blessed $trackObj && (!$isMix || ($trackObj->id != $seedToAdd->id))) {
                             push @usableTracks, $trackObj;
                             main::DEBUGLOG && $log->debug("..." . $track);
                             push @ids, $trackObj->id;
-                            if (scalar(@ids) >= $NUM_MIX_TRACKS) {
+                            if (scalar(@ids) >= $maxTracks) {
                                 last;
                             }
                         }
