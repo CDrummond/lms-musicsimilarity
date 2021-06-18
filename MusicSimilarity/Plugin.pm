@@ -616,7 +616,7 @@ sub cliMix {
 
 	                # add an item for "play this mix"
 	                $request->addResultLoop($loopname, $chunkCount, 'nextWindow', 'nowPlaying');
-	                $request->addResultLoop($loopname, $chunkCount, 'text', $request->string('MUSICSIMILARITY_PLAYTHISMIX'));
+	                $request->addResultLoop($loopname, $chunkCount, 'text', $request->string($isMix ? 'MUSICSIMILARITY_PLAYTHISMIX' : 'MUSICSIMILARITY_PLAYTHISLIST'));
 	                $request->addResultLoop($loopname, $chunkCount, 'icon-id', '/html/images/playall.png');
 	                my $actions = {
 		                'go' => {

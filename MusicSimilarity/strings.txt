@@ -63,6 +63,9 @@ MUSICSIMILARITY_PLAYTHISMIX
 	RU	Воспроизвести этот микс
 	SV	Spela upp den här mixen
 
+MUSICSIMILARITY_PLAYTHISLIST
+	EN	Play this list
+
 MUSICSIMILARITY_NO_REPEAT_ARTIST
 	EN	Don't repeat artist for x tracks
 
