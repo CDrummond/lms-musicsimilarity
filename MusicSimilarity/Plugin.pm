@@ -84,10 +84,10 @@ sub initPlugin {
         func     => \&similarTracksHandler,
     ) );
 
-    #Slim::Menu::TrackInfo->registerInfoProvider( musicsimilaritybyartist => (
-    #    above    => 'favorites',
-    #    func     => \&similarTracksByArtistHandler,
-    #) );
+    Slim::Menu::TrackInfo->registerInfoProvider( musicsimilaritybyartist => (
+        above    => 'favorites',
+        func     => \&similarTracksByArtistHandler,
+    ) );
 
     Slim::Menu::AlbumInfo->registerInfoProvider( musicsimilaritymix => (
         below    => 'addalbum',
@@ -300,12 +300,12 @@ sub _getSimilarData {
     my $count = shift;
     my $http = LWP::UserAgent->new;
     my $jsonData = to_json({
-                        count          => $count,
-                        format         => 'text-url',
-                        min            => $prefs->get('min_duration') || 0,
-                        max            => $prefs->get('max_duration') || 0,
-                        track          => [$seedTrack->url],
-                        filteronartist => $byArtist
+                        count        => $count,
+                        format       => 'text-url',
+                        min          => $prefs->get('min_duration') || 0,
+                        max          => $prefs->get('max_duration') || 0,
+                        track        => [$seedTrack->url],
+                        filterartist => $byArtist
                     });
     $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");
