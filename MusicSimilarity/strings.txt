@@ -18,6 +18,12 @@ MUSICSIMILARITY_FILTER_XMAS
 MUSICSIMILARITY_FILTER_XMAS_DESC
 	EN	Exclude tracks tagged with 'Christmas' genre, unless in December (Default: Yes)
 
+MUSICSIMILARITY_API_HOST
+	EN	API Server Host
+
+MUSICSIMILARITY_API_HOST_DESC
+	EN	Host on which the Essentia or Musly API server is running.
+
 MUSICSIMILARITY_API_PORT
 	EN	API Server HTTP Port
 

@@ -39,6 +39,10 @@
             <input type="text" class="stdedit sliderInput_2_20_1" name="pref_dstm_tracks" id="dstm_tracks" value="[% prefs.pref_dstm_tracks %]" size="5">
         [% END %]
 
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_API_HOST" desc="MUSICSIMILARITY_API_HOST_DESC" %]
+            <input type="text" class="stdedit" name="pref_host" id="host" value="[% prefs.pref_host %]" size="15">
+        [% END %]
+
         [% WRAPPER settingGroup title="MUSICSIMILARITY_API_PORT" desc="MUSICSIMILARITY_API_PORT_DESC" %]
             <input type="text" class="stdedit" name="pref_port" id="port" value="[% prefs.pref_port %]" size="5">
         [% END %]
