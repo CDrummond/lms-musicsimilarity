@@ -57,6 +57,7 @@ sub initPlugin {
     $prefs->init({
         filter_genres    => 0,
         filter_xmas      => 1,
+        host             => 'localhost',
         port             => 11000,
         min_duration     => 0,
         max_duration     => 0,
@@ -156,8 +157,9 @@ sub _dstmMix {
 
             my $dstm_tracks = $prefs->get('dstm_tracks') || $DEF_NUM_DSTM_TRACKS;
             my $jsonData = _getMixData(\@seedsToUse, $previousTracks ? \@$previousTracks : undef, $dstm_tracks, 1, $filterGenres);
+            my $host = $prefs->get('host') || 'localhost';
             my $port = $prefs->get('port') || 11000;
-            my $url = "http://localhost:$port/api/similar";
+            my $url = "http://$host:$port/api/similar";
             Slim::Networking::SimpleAsyncHTTP->new(
                 sub {
                     my $response = shift;
@@ -503,8 +505,9 @@ sub cliMix {
     if (scalar @seedsToUse > 0) {
         my $maxTracks = $isMix ? $NUM_MIX_TRACKS : $NUM_SIMILAR_TRACKS;
         my $jsonData = $isMix ? _getMixData(\@seedsToUse, undef, $maxTracks * 2, 1, $prefs->get('filter_genres') || 0) : _getSimilarData(@seedsToUse[0], $request->getParam('byArtist') || 0, $maxTracks);
+        my $host = $prefs->get('host') || 'localhost';
         my $port = $prefs->get('port') || 11000;
-        my $url = $isMix ? "http://localhost:$port/api/similar" : "http://localhost:$port/api/dump";
+        my $url = $isMix ? "http://$host:$port/api/similar" : "http://$host:$port/api/dump";
         $request->setStatusProcessing();
         Slim::Networking::SimpleAsyncHTTP->new(
             sub {
