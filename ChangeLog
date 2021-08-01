@@ -6,6 +6,7 @@
 4. Set default API timeout to 30 seconds.
 5. Two mixers, one that respects genre filters and one that ignores this.
 6. Add 'Similar tracks' and 'Similar tracks by artist' to 'More' menu.
+7. Allow API server to be on a different host to LMS.
 
 0.0.2
 -----
