@@ -22,13 +22,13 @@ MUSICSIMILARITY_API_HOST
 	EN	API Server Host
 
 MUSICSIMILARITY_API_HOST_DESC
-	EN	Host on which the Essentia or Musly API server is running.
+	EN	Host on which the API server is running.
 
 MUSICSIMILARITY_API_PORT
 	EN	API Server HTTP Port
 
 MUSICSIMILARITY_API_PORT_DESC
-	EN	Port number on which the Essentia or Musly API server is running.
+	EN	Port number on which the API server is running.
 
 MUSICSIMILARITY_MIN_DURATION
 	EN	Minimum duration
