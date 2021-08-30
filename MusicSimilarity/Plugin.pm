@@ -231,8 +231,6 @@ sub _mixFailed {
 sub _getPreviousTracks {
     my ($client, $count) = @_;
     main::DEBUGLOG && $log->debug("Get last " . $count . " tracks");
-    my @seeds = ref $seeIds ? @$seeIds : ($seeIds);
-    my %seedsHash = map { $_ => 1 } @seeds;
     return unless $client;
 
     $client = $client->master;
