@@ -152,7 +152,7 @@ sub _dstmMix {
             if ($maxNumPrevTracks<0 || $maxNumPrevTracks>$MAX_PREVIOUS_TRACKS) {
                 $maxNumPrevTracks = $DEF_MAX_PREVIOUS_TRACKS;
             }
-            my $previousTracks = _getPreviousTracks($client, \@seedIds, $maxNumPrevTracks);
+            my $previousTracks = _getPreviousTracks($client, $maxNumPrevTracks);
             main::DEBUGLOG && $log->debug("Num tracks to previous: " . ($previousTracks ? scalar(@$previousTracks) : 0));
 
             my $dstm_tracks = $prefs->get('dstm_tracks') || $DEF_NUM_DSTM_TRACKS;
@@ -229,7 +229,7 @@ sub _mixFailed {
 }
 
 sub _getPreviousTracks {
-    my ($client, $seeIds, $count) = @_;
+    my ($client, $count) = @_;
     main::DEBUGLOG && $log->debug("Get last " . $count . " tracks");
     my @seeds = ref $seeIds ? @$seeIds : ($seeIds);
     my %seedsHash = map { $_ => 1 } @seeds;
@@ -244,7 +244,7 @@ sub _getPreviousTracks {
                 $track = Slim::Schema->objectForUrl($track);
             }
 
-            next unless blessed $track && !exists($seedsHash{ $track->id });
+            next unless blessed $track;
 
             push @$tracks, $track;
             if (scalar @$tracks >= $count) {
