@@ -9,3 +9,10 @@ HTTP API that this plugin invokes.
 'Music Similarity' uses 'Musly' for similarity sorting and 'Essentia' for
 filtering.
 
+## LMS Menus
+
+3 entries are added to LMS' 'More'/context menus:
+
+1. `Similar tracks` returns (up to) 100 tracks that are similar to the selected track, returned in similarity order.
+2. `Similar tracks by artist` returns (up to) 100 tracks by the selected track that are similar to the track, returned in similarity order.
+3. `Create similarity mix` creates a mix of (up to) 50 tracks based upon the selected artist, album, or track, returned in a shuffled order.
