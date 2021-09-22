@@ -43,6 +43,10 @@
             <textarea class="stdedit" name="pref_genre_groups" id="genre_groups" cols="80" rows="5">[% prefs.pref_genre_groups %]</textarea>
         [% END %]
 
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_IGNORE_GENRE" desc="MUSICSIMILARITY_IGNORE_GENRE_DESC" %]
+            <textarea class="stdedit" name="pref_ignore_genre" id="ignore_genre" cols="80" rows="5">[% prefs.pref_ignore_genre %]</textarea>
+        [% END %]
+
         [% WRAPPER settingGroup title="MUSICSIMILARITY_API_HOST" desc="MUSICSIMILARITY_API_HOST_DESC" %]
             <input type="text" class="stdedit" name="pref_host" id="host" value="[% prefs.pref_host %]" size="15">
         [% END %]

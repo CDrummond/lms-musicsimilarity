@@ -1,6 +1,8 @@
 0.0.4
 -----
 1. Allow configuring genre groups in LMS's settings pages.
+2. Allow configuring list of artists where genre should be ignored (i.e. match
+   all).
 
 0.0.3
 -----

@@ -288,7 +288,8 @@ sub _getMixData {
                         shuffle       => $shuffle,
                         norepart      => $prefs->get('no_repeat_artist'),
                         norepalb      => $prefs->get('no_repeat_album'),
-                        genregroups  => _genreGroups()
+                        genregroups  => _genreGroups(),
+                        ignoregenre  => _ignoreGenre()
                     });
     $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");
@@ -307,7 +308,8 @@ sub _getSimilarData {
                         max          => $prefs->get('max_duration') || 0,
                         track        => [$seedTrack->url],
                         filterartist => $byArtist,
-                        genregroups  => _genreGroups()
+                        genregroups  => _genreGroups(),
+                        ignoregenre  => _ignoreGenre()
                     });
     $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");
@@ -347,6 +349,34 @@ sub _genreGroups {
         }
     }
     return $configuredGenreGroups;
+}
+
+my $configuredIgnoreGenre = ();
+my $configuredIgnoreGenreTs = 0;
+
+sub _ignoreGenre {
+    # Check to see if config has changed, saves try to read and process each time
+    my $ts = $prefs->get('_ts_ignore_genre');
+    if ($ts==$configuredIgnoreGenreTs) {
+        return $configuredIgnoreGenre;
+    }
+    $configuredIgnoreGenreTs = $ts;
+
+    $configuredIgnoreGenre = ();
+    my $ipref = $prefs->get('ignore_genre');
+    if ($ipref) {
+        my @artists = split(/\,/, $ipref);
+        foreach my $artist (@artists) {
+            # left trim
+            $artist=~ s/^\s+//;
+            # right trim
+            $artist=~ s/\s+$//;
+            if (length $artist > 0){
+                push(@$configuredIgnoreGenre, $artist);
+            }
+        }
+    }
+    return $configuredIgnoreGenre;
 }
 
 sub trackInfoHandler {
