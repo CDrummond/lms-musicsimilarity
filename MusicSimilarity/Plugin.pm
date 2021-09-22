@@ -287,7 +287,8 @@ sub _getMixData {
                         previous      => [@previous_paths],
                         shuffle       => $shuffle,
                         norepart      => $prefs->get('no_repeat_artist'),
-                        norepalb      => $prefs->get('no_repeat_album')
+                        norepalb      => $prefs->get('no_repeat_album'),
+                        genregroups  => _genreGroups()
                     });
     $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");
@@ -305,11 +306,47 @@ sub _getSimilarData {
                         min          => $prefs->get('min_duration') || 0,
                         max          => $prefs->get('max_duration') || 0,
                         track        => [$seedTrack->url],
-                        filterartist => $byArtist
+                        filterartist => $byArtist,
+                        genregroups  => _genreGroups()
                     });
     $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");
     return $jsonData;
+}
+
+my $configuredGenreGroups = ();
+my $configuredGenreGroupsTs = 0;
+
+sub _genreGroups {
+    # Check to see if config has changed, saves try to read and process each time
+    my $ts = $prefs->get('_ts_genre_groups');
+    if ($ts==$configuredGenreGroupsTs) {
+        return $configuredGenreGroups;
+    }
+    $configuredGenreGroupsTs = $ts;
+
+    $configuredGenreGroups = ();
+    my $ggpref = $prefs->get('genre_groups');
+    if ($ggpref) {
+        my @lines = split(/\n/, $ggpref);
+        foreach my $line (@lines) {
+            my @genreGroup = split(/\,/, $line);
+            my $grp = ();
+            foreach my $genre (@genreGroup) {
+                # left trim
+                $genre=~ s/^\s+//;
+                # right trim
+                $genre=~ s/\s+$//;
+                if (length $genre > 0){
+                    push(@$grp, $genre);
+                }
+            }
+            if (scalar $grp > 0) {
+                push(@$configuredGenreGroups, $grp);
+            }
+        }
+    }
+    return $configuredGenreGroups;
 }
 
 sub trackInfoHandler {

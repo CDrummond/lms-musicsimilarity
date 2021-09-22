@@ -39,6 +39,10 @@
             <input type="text" class="stdedit sliderInput_2_20_1" name="pref_dstm_tracks" id="dstm_tracks" value="[% prefs.pref_dstm_tracks %]" size="5">
         [% END %]
 
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_GENRE_GROUPS" desc="MUSICSIMILARITY_GENRE_GROUPS_DESC" %]
+            <textarea class="stdedit" name="pref_genre_groups" id="genre_groups" cols="80" rows="5">[% prefs.pref_genre_groups %]</textarea>
+        [% END %]
+
         [% WRAPPER settingGroup title="MUSICSIMILARITY_API_HOST" desc="MUSICSIMILARITY_API_HOST_DESC" %]
             <input type="text" class="stdedit" name="pref_host" id="host" value="[% prefs.pref_host %]" size="15">
         [% END %]
