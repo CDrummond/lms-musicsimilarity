@@ -1,13 +1,16 @@
 # Music Similarity
 
-Music Similarity plugin for LMS. Currently provides a mixer for
-`Don't Stop The Music` using either [Music Similarity](https://github.com/CDrummond/music-similarity),
-[Essentia](https://github.com/CDrummond/essentia-api)
-or [Musly](https://github.com/CDrummond/musly-server). These provide the same
-HTTP API that this plugin invokes.
+Music Similarity plugin for LMS. Provides a mixer for `Don't Stop The Music`.
 
-'Music Similarity' uses 'Musly' for similarity sorting and 'Essentia' for
-filtering.
+This plugin will send requests to the [Music Similarity](https://github.com/CDrummond/music-similarity)
+service to get random tracks similar to seed tracks chosen from the current
+play queue.
+
+The [Music Similarity](https://github.com/CDrummond/music-similarity) backend
+uses [Musly](https://github.com/CDrummond/musly) to locate similar tracks based
+upon a seed track's 'timbre'. The similar tracks are then further filtered by
+checking audio characteristics (BPM, danceability, aggressiveness, etc.) against
+those of the seed track.
 
 ## LMS Menus
 
