@@ -55,17 +55,19 @@ sub initPlugin {
     return 1 if $initialized;
 
     $prefs->init({
-        filter_genres    => 0,
-        filter_xmas      => 1,
-        host             => 'localhost',
-        port             => 11000,
-        min_duration     => 0,
-        max_duration     => 0,
-        no_repeat_artist => 15,
-        no_repeat_album  => 25,
-        no_repeat_track  => $DEF_MAX_PREVIOUS_TRACKS,
-        dstm_tracks      => $DEF_NUM_DSTM_TRACKS,
-        timeout          => 30
+        filter_genres            => 0,
+        filter_xmas              => 1,
+        host                     => 'localhost',
+        port                     => 11000,
+        min_duration             => 0,
+        max_duration             => 0,
+        no_repeat_artist         => 15,
+        no_repeat_album          => 25,
+        no_repeat_track          => $DEF_MAX_PREVIOUS_TRACKS,
+        dstm_tracks              => $DEF_NUM_DSTM_TRACKS,
+        timeout                  => 30,
+        no_genre_match_adjustment    => 15,
+        genre_group_match_adjustment =>  7
     });
 
     if ( main::WEBUI ) {
@@ -277,19 +279,21 @@ sub _getMixData {
 
     my $http = LWP::UserAgent->new;
     my $jsonData = to_json({
-                        count         => $trackCount,
-                        format        => 'text',
-                        filtergenre   => $filterGenres,
-                        filterxmas    => $prefs->get('filter_xmas') || 1,
-                        min           => $prefs->get('min_duration') || 0,
-                        max           => $prefs->get('max_duration') || 0,
-                        track         => [@track_paths],
-                        previous      => [@previous_paths],
-                        shuffle       => $shuffle,
-                        norepart      => $prefs->get('no_repeat_artist'),
-                        norepalb      => $prefs->get('no_repeat_album'),
-                        genregroups  => _genreGroups(),
-                        ignoregenre  => _ignoreGenre()
+                        count           => $trackCount,
+                        format          => 'text',
+                        filtergenre     => $filterGenres,
+                        filterxmas      => $prefs->get('filter_xmas') || 1,
+                        min             => $prefs->get('min_duration') || 0,
+                        max             => $prefs->get('max_duration') || 0,
+                        track           => [@track_paths],
+                        previous        => [@previous_paths],
+                        shuffle         => $shuffle,
+                        norepart        => $prefs->get('no_repeat_artist'),
+                        norepalb        => $prefs->get('no_repeat_album'),
+                        genregroups     => _genreGroups(),
+                        ignoregenre     => _ignoreGenre(),
+                        nogenrematchadj => $prefs->get('no_genre_match_adjustment'),
+                        genregroupadj   => $prefs->get('genre_group_match_adjustment')
                     });
     $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");
@@ -302,14 +306,16 @@ sub _getSimilarData {
     my $count = shift;
     my $http = LWP::UserAgent->new;
     my $jsonData = to_json({
-                        count        => $count,
-                        format       => 'text-url',
-                        min          => $prefs->get('min_duration') || 0,
-                        max          => $prefs->get('max_duration') || 0,
-                        track        => [$seedTrack->url],
-                        filterartist => $byArtist,
-                        genregroups  => _genreGroups(),
-                        ignoregenre  => _ignoreGenre()
+                        count           => $count,
+                        format          => 'text-url',
+                        min             => $prefs->get('min_duration') || 0,
+                        max             => $prefs->get('max_duration') || 0,
+                        track           => [$seedTrack->url],
+                        filterartist    => $byArtist,
+                        genregroups     => _genreGroups(),
+                        ignoregenre     => _ignoreGenre(),
+                        nogenrematchadj => $prefs->get('no_genre_match_adjustment'),
+                        genregroupadj   => $prefs->get('genre_group_match_adjustment')
                     });
     $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");

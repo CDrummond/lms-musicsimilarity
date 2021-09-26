@@ -47,6 +47,14 @@
             <textarea class="stdedit" name="pref_ignore_genre" id="ignore_genre" cols="80" rows="5">[% prefs.pref_ignore_genre %]</textarea>
         [% END %]
 
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_GENRE_NO_MATCH_ADJUSTMENT" desc="MUSICSIMILARITY_GENRE_NO_MATCH_ADJUSTMENT_DESC" %]
+            <input type="text" class="stdedit sliderInput_0_20_1" name="pref_no_genre_MATCH_ADJUSTMENT" id="no_genre_MATCH_ADJUSTMENT" value="[% prefs.pref_no_genre_MATCH_ADJUSTMENT %]" size="5">
+        [% END %]
+
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_GENRE_GROUP_MATCH_ADJUSTMENT" desc="MUSICSIMILARITY_GENRE_GROUP_MATCH_ADJUSTMENT_DESC" %]
+            <input type="text" class="stdedit sliderInput_0_20_1" name="pref_genre_group_MATCH_ADJUSTMENT" id="genre_group_MATCH_ADJUSTMENT" value="[% prefs.pref_genre_group_MATCH_ADJUSTMENT %]" size="5">
+        [% END %]
+        
         [% WRAPPER settingGroup title="MUSICSIMILARITY_API_HOST" desc="MUSICSIMILARITY_API_HOST_DESC" %]
             <input type="text" class="stdedit" name="pref_host" id="host" value="[% prefs.pref_host %]" size="15">
         [% END %]

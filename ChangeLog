@@ -11,6 +11,7 @@
  9. Allow configuring genre groups in LMS's settings pages.
 10. Allow configuring list of artists where genre should be ignored (i.e. match
     all).
+11. Make genre score adjustment configurable.
 
 0.0.2
 -----
