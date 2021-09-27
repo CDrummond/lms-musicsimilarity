@@ -371,7 +371,7 @@ sub _ignoreGenre {
     $configuredIgnoreGenre = ();
     my $ipref = $prefs->get('ignore_genre');
     if ($ipref) {
-        my @artists = split(/\,/, $ipref);
+        my @artists = split(/\;/, $ipref);
         foreach my $artist (@artists) {
             # left trim
             $artist=~ s/^\s+//;
