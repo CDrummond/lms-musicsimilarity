@@ -124,5 +124,4 @@ MUSICSIMILARITY_GENRE_GROUP_MATCH_ADJUSTMENT
 	EN	Genre group match adjustment
 
 MUSICSIMILARITY_GENRE_GROUP_MATCH_ADJUSTMENT_DESC
-	EN	Adjust a track's similarity score when it does not match the seed's genre, but is in the same genre group as the seed. The higher the value the more different you make the
- similarity score.
+	EN	Adjust a track's similarity score when it does not match the seed's genre, but is in the same genre group as the seed. The higher the value the more different you make the similarity score.
