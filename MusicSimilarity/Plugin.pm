@@ -338,7 +338,7 @@ sub _genreGroups {
     if ($ggpref) {
         my @lines = split(/\n/, $ggpref);
         foreach my $line (@lines) {
-            my @genreGroup = split(/\,/, $line);
+            my @genreGroup = split(/\;/, $line);
             my $grp = ();
             foreach my $genre (@genreGroup) {
                 # left trim
