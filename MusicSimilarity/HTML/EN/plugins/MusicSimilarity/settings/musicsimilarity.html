@@ -1,19 +1,6 @@
 [% PROCESS settings/header.html %]
 
     [% WRAPPER settingSection %]
-        [% WRAPPER settingGroup title="MUSICSIMILARITY_FILTER_GENRES" desc="MUSICSIMILARITY_FILTER_GENRES_DESC" %]
-            <select class="stdedit" name="pref_filter_genres" id="filter_genres">
-                <option [% IF NOT prefs.filter_genres %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
-                <option [% IF prefs.filter_genres %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
-            </select>
-        [% END %]
-
-        [% WRAPPER settingGroup title="MUSICSIMILARITY_FILTER_XMAS" desc="MUSICSIMILARITY_FILTER_XMAS_DESC" %]
-            <select class="stdedit" name="pref_filter_xmas" id="filter_xmas">
-                <option [% IF NOT prefs.filter_xmas %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
-                <option [% IF prefs.filter_xmas %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
-            </select>
-        [% END %]
 
         [% WRAPPER settingGroup title="MUSICSIMILARITY_NO_REPEAT_ARTIST" desc="MUSICSIMILARITY_NO_REPEAT_ARTIST_DESC" %]
             <input type="text" class="stdedit sliderInput_0_200_1" name="pref_no_repeat_artist" id="no_repeat_artist" value="[% prefs.pref_no_repeat_artist %]" size="5">
@@ -39,6 +26,24 @@
             <input type="text" class="stdedit sliderInput_2_20_1" name="pref_dstm_tracks" id="dstm_tracks" value="[% prefs.pref_dstm_tracks %]" size="5">
         [% END %]
 
+        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
+        <b>[% "GENRES" | string %]</b><br/>
+        <div style="font-size:50%!important; opacity:0.6">[% "MUSICSIMILARITY_GENRE_NOTE" | string %]</div><br/>
+
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_FILTER_GENRES" desc="MUSICSIMILARITY_FILTER_GENRES_DESC" %]
+            <select class="stdedit" name="pref_filter_genres" id="filter_genres">
+                <option [% IF NOT prefs.filter_genres %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
+                <option [% IF prefs.filter_genres %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
+            </select>
+        [% END %]
+
+        [% WRAPPER settingGroup title="MUSICSIMILARITY_FILTER_XMAS" desc="MUSICSIMILARITY_FILTER_XMAS_DESC" %]
+            <select class="stdedit" name="pref_filter_xmas" id="filter_xmas">
+                <option [% IF NOT prefs.filter_xmas %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
+                <option [% IF prefs.filter_xmas %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
+            </select>
+        [% END %]
+
         [% WRAPPER settingGroup title="MUSICSIMILARITY_GENRE_GROUPS" desc="MUSICSIMILARITY_GENRE_GROUPS_DESC" %]
             <textarea class="stdedit" name="pref_genre_groups" id="genre_groups" cols="80" rows="5">[% prefs.pref_genre_groups %]</textarea>
         [% END %]
@@ -54,7 +59,9 @@
         [% WRAPPER settingGroup title="MUSICSIMILARITY_GENRE_GROUP_MATCH_ADJUSTMENT" desc="MUSICSIMILARITY_GENRE_GROUP_MATCH_ADJUSTMENT_DESC" %]
             <input type="text" class="stdedit sliderInput_0_20_1" name="pref_genre_group_match_adjustment" id="genre_group_match_adjustment" value="[% prefs.pref_genre_group_match_adjustment %]" size="5">
         [% END %]
-        
+
+        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
+
         [% WRAPPER settingGroup title="MUSICSIMILARITY_API_HOST" desc="MUSICSIMILARITY_API_HOST_DESC" %]
             <input type="text" class="stdedit" name="pref_host" id="host" value="[% prefs.pref_host %]" size="15">
         [% END %]
