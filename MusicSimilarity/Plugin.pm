@@ -55,19 +55,19 @@ sub initPlugin {
     return 1 if $initialized;
 
     $prefs->init({
-        filter_genres            => 0,
-        filter_xmas              => 1,
-        host                     => 'localhost',
-        port                     => 11000,
-        min_duration             => 0,
-        max_duration             => 0,
-        no_repeat_artist         => 15,
-        no_repeat_album          => 25,
-        no_repeat_track          => $DEF_MAX_PREVIOUS_TRACKS,
-        dstm_tracks              => $DEF_NUM_DSTM_TRACKS,
-        timeout                  => 30,
+        filter_genres                => 0,
+        filter_xmas                  => 1,
+        host                         => 'localhost',
+        port                         => 11000,
+        min_duration                 => 0,
+        max_duration                 => 0,
+        no_repeat_artist             => 15,
+        no_repeat_album              => 25,
+        no_repeat_track              => $DEF_MAX_PREVIOUS_TRACKS,
+        dstm_tracks                  => $DEF_NUM_DSTM_TRACKS,
+        timeout                      => 30,
         no_genre_match_adjustment    => 15,
-        genre_group_match_adjustment =>  7
+        genre_group_match_adjustment => 7
     });
 
     if ( main::WEBUI ) {
