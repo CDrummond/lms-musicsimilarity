@@ -12,6 +12,7 @@
 10. Allow configuring list of artists where genre should be ignored (i.e. match
     all).
 11. Make genre score adjustment configurable.
+12. Make essentia usage configurable.
 
 0.0.2
 -----

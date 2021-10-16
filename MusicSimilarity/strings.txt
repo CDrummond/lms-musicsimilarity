@@ -128,3 +128,27 @@ MUSICSIMILARITY_GENRE_GROUP_MATCH_ADJUSTMENT_DESC
 
 MUSICSIMILARITY_GENRE_NOTE
 	EN	Music similarity is based upon the tonal attributes of a track. However, to aid with this genres may also be used, and you can configure this behaviour below. You may create 'genre groups' to indicate that genres are releated (e.g. 'Hard Rock' and 'Rock'). If you then enable filtering by genre, this will allow tracks with different genres but within the same group to be accepted. You may also aid the similarity score by setting values for 'Genre no match adjustment' (tracks that are of different genres, and not in the same genre group, will have their similarity score adjusted (a higher value implies more difference)), and 'Genre group match adjustment' (tracks are of a different genre, but are within the same genre group). If a track has a similarity score to another of (e.g.) 5 but it is not in the same genre group and 'Genre no match adjustment' is set to 15, then the actual score would be 20 - i.e. making it appear more dissimilar. This genre adjustment is applied regardless of whether 'Restrict genres' is enabled or not.
+
+MUSICSIMILARITY_ATTRIBUTE_HANDLING
+	EN	Attribute handling
+
+MUSICSIMILARITY_ATTRIBUTE_HANDLING_NOTE
+	EN	If you have analysed your tracks with Essentia, then this can be used to filter tracks based upon attributes (e.g. BPM, danceability, aggressiveness, etc.) and also for the similarity score. Setting both max BPM and attribute difference to their highest values will effectively disable attribute filtering.
+
+MUSICSIMILARITY_MAX_BPM_DIFF
+	EN	Max BPM difference
+
+MUSICSIMILARITY_MAX_BPM_DIFF_DESC
+	EN	Maximum difference in BPM between tracks.
+
+MUSICSIMILARITY_MAX_ATTRIB_DIFF
+	EN	Max attribute difference (%)
+
+MUSICSIMILARITY_MAX_ATTRIB_DIFF_DESC
+	EN	Maximum difference in attributes between tracks. Essentia gives a probability score for each attribute, this setting specifies the maximum difference in this score.
+
+MUSICSIMILARITY_ATTRIB_WEIGHT
+	EN	Similarity weighting
+
+MUSICSIMILARITY_ATTRIB_WEIGHT_DESC
+	EN	The similarity score between tracks can be calculated using only Musly (set weight to 0), only Essentia (set weight to 100), or a combination of both (with the weight here specifying the percentage of the scrore given to Essentia).

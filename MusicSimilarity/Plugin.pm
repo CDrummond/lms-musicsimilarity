@@ -67,7 +67,10 @@ sub initPlugin {
         dstm_tracks                  => $DEF_NUM_DSTM_TRACKS,
         timeout                      => 30,
         no_genre_match_adjustment    => 15,
-        genre_group_match_adjustment => 7
+        genre_group_match_adjustment => 7,
+        max_bpm_diff                 => 50,
+        max_attrib_diff              => 60,
+        attrib_weight                => 35
     });
 
     if ( main::WEBUI ) {
@@ -293,7 +296,10 @@ sub _getMixData {
                         genregroups     => _genreGroups(),
                         ignoregenre     => _ignoreGenre(),
                         nogenrematchadj => $prefs->get('no_genre_match_adjustment'),
-                        genregroupadj   => $prefs->get('genre_group_match_adjustment')
+                        genregroupadj   => $prefs->get('genre_group_match_adjustment'),
+                        maxbpmdiff      => $prefs->get('max_bpm_diff'),
+                        maxattribdiff   => $prefs->get('max_attrib_diff'),
+                        attribweight    => $prefs->get('attrib_weight')
                     });
     $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");
@@ -315,7 +321,10 @@ sub _getSimilarData {
                         genregroups     => _genreGroups(),
                         ignoregenre     => _ignoreGenre(),
                         nogenrematchadj => $prefs->get('no_genre_match_adjustment'),
-                        genregroupadj   => $prefs->get('genre_group_match_adjustment')
+                        genregroupadj   => $prefs->get('genre_group_match_adjustment'),
+                        maxbpmdiff      => $prefs->get('max_bpm_diff'),
+                        maxattribdiff   => $prefs->get('max_attrib_diff'),
+                        attribweight    => $prefs->get('attrib_weight')
                     });
     $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");
