@@ -108,12 +108,6 @@ MUSICSIMILARITY_GENRE_GROUPS
 MUSICSIMILARITY_GENRE_GROUPS_DESC
 	EN	Define a list of genre groups. When filtering by genre only similar tracks within a track's genre group will be used. (If a track is not in a group, then only similar tracks that are also not in a group will be used.) Groups are configured as a semi-colon separated list of genre names (e.g. Pop; Dance) with each new group on a new line (empty lines are ignored).
 
-MUSICSIMILARITY_IGNORE_GENRE
-	EN	Ignore genre
-
-MUSICSIMILARITY_IGNORE_GENRE_DESC
-	EN	Semi-colon separated list of artist names where genre's should be ignored - i.e. will match all genres.
-
 MUSICSIMILARITY_GENRE_NO_MATCH_ADJUSTMENT
 	EN	Genre no match adjustment
 

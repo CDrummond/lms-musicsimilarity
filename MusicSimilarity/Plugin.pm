@@ -294,7 +294,6 @@ sub _getMixData {
                         norepart        => $prefs->get('no_repeat_artist'),
                         norepalb        => $prefs->get('no_repeat_album'),
                         genregroups     => _genreGroups(),
-                        ignoregenre     => _ignoreGenre(),
                         nogenrematchadj => $prefs->get('no_genre_match_adjustment'),
                         genregroupadj   => $prefs->get('genre_group_match_adjustment'),
                         maxbpmdiff      => $prefs->get('max_bpm_diff'),
@@ -319,7 +318,6 @@ sub _getSimilarData {
                         track           => [$seedTrack->url],
                         filterartist    => $byArtist,
                         genregroups     => _genreGroups(),
-                        ignoregenre     => _ignoreGenre(),
                         nogenrematchadj => $prefs->get('no_genre_match_adjustment'),
                         genregroupadj   => $prefs->get('genre_group_match_adjustment'),
                         maxbpmdiff      => $prefs->get('max_bpm_diff'),
@@ -368,31 +366,6 @@ sub _genreGroups {
 
 my $configuredIgnoreGenre = ();
 my $configuredIgnoreGenreTs = 0;
-
-sub _ignoreGenre {
-    # Check to see if config has changed, saves try to read and process each time
-    my $ts = $prefs->get('_ts_ignore_genre');
-    if ($ts==$configuredIgnoreGenreTs) {
-        return $configuredIgnoreGenre;
-    }
-    $configuredIgnoreGenreTs = $ts;
-
-    $configuredIgnoreGenre = ();
-    my $ipref = $prefs->get('ignore_genre');
-    if ($ipref) {
-        my @artists = split(/\;/, $ipref);
-        foreach my $artist (@artists) {
-            # left trim
-            $artist=~ s/^\s+//;
-            # right trim
-            $artist=~ s/\s+$//;
-            if (length $artist > 0){
-                push(@$configuredIgnoreGenre, $artist);
-            }
-        }
-    }
-    return $configuredIgnoreGenre;
-}
 
 sub trackInfoHandler {
     return _objectInfoHandler( 'track', @_ );
