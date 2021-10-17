@@ -4,13 +4,13 @@ MUSICSIMILARITY
 	EN	Music Similarity
 
 MUSICSIMILARITY_DESC
-	EN	Music Similarity Mixer for Don't Stop The Music
+	EN	Music Similarity Mixer for Don't Stop the Music
 
 MUSICSIMILARITY_FILTER_GENRES
 	EN	Restrict genres
 
 MUSICSIMILARITY_FILTER_GENRES_DESC
-	EN	Restrict mix to the genres similar to that of the seed (Default: Yes)
+	EN	Restrict mix to genres similar to that of the seed. Requires configuring genre groups (below). (Default: Yes)
 
 MUSICSIMILARITY_FILTER_XMAS
 	EN	Exclude 'Christmas' genre
@@ -106,7 +106,7 @@ MUSICSIMILARITY_GENRE_GROUPS
 	EN	Genre groups
 
 MUSICSIMILARITY_GENRE_GROUPS_DESC
-	EN	Define a list of genre groups. When filtering by genre only similar tracks within a track's genre group will be used. (If a track is not in a group, then only similar tracks that are also not in a group will be used.) Groups are configured as a semi-colon separated list of genre names (e.g. Pop; Dance) with each new group on a new line (empty lines are ignored).
+	EN	Define a list of genre groups. When filtering by genre only similar tracks within a track's genre group will be used. (If a track is not in a group, then only similar tracks that are also not in a group will be used.) Groups are configured as a semi-colon separated list of genre names (e.g. Pop; Dance) with each new group on a new line (empty lines are ignored). To enable filterig by specific genre then create a group with just that genre.
 
 MUSICSIMILARITY_GENRE_NO_MATCH_ADJUSTMENT
 	EN	Genre no match adjustment
