@@ -44,6 +44,7 @@ my $log = Slim::Utils::Log->addLogCategory({
 });
 
 my $prefs = preferences('plugin.musicsimilarity');
+my $serverprefs = preferences('server');
 
 sub shutdownPlugin {
     $initialized = 0;
@@ -281,6 +282,7 @@ sub _getMixData {
     }
 
     my $http = LWP::UserAgent->new;
+    my $mediaDirs = $serverprefs->get('mediadirs');
     my $jsonData = to_json({
                         count           => $trackCount,
                         format          => 'text',
@@ -298,7 +300,8 @@ sub _getMixData {
                         genregroupadj   => $prefs->get('genre_group_match_adjustment'),
                         maxbpmdiff      => $prefs->get('max_bpm_diff'),
                         maxattribdiff   => $prefs->get('max_attrib_diff'),
-                        attribweight    => $prefs->get('attrib_weight')
+                        attribweight    => $prefs->get('attrib_weight'),
+                        mpath           => @$mediaDirs[0]
                     });
     $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");
@@ -310,6 +313,7 @@ sub _getSimilarData {
     my $byArtist = shift;
     my $count = shift;
     my $http = LWP::UserAgent->new;
+    my $mediaDirs = $serverprefs->get('mediadirs');
     my $jsonData = to_json({
                         count           => $count,
                         format          => 'text-url',
@@ -322,7 +326,8 @@ sub _getSimilarData {
                         genregroupadj   => $prefs->get('genre_group_match_adjustment'),
                         maxbpmdiff      => $prefs->get('max_bpm_diff'),
                         maxattribdiff   => $prefs->get('max_attrib_diff'),
-                        attribweight    => $prefs->get('attrib_weight')
+                        attribweight    => $prefs->get('attrib_weight'),
+                        mpath           => @$mediaDirs[0]
                     });
     $http->timeout($prefs->get('timeout') || 30);
     main::DEBUGLOG && $log->debug("Request $jsonData");
