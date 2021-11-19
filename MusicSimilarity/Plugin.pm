@@ -144,12 +144,16 @@ sub _dstmMix {
     if ($seedTracks && ref $seedTracks && scalar @$seedTracks) {
         my @seedIds = ();
         my @seedsToUse = ();
+        my $numSpot = 0;
         foreach my $seedTrack (@$seedTracks) {
             my ($trackObj) = Slim::Schema->find('Track', $seedTrack->{id});
             if ($trackObj) {
                 main::DEBUGLOG && $log->debug("Seed " . $trackObj->path . " id:" . $seedTrack->{id});
                 push @seedsToUse, $trackObj;
                 push @seedIds, $seedTrack->{id};
+                if ( $trackObj->path =~ m/^spotify:/ ) {
+                    $numSpot++;
+                }
             }
         }
 
@@ -189,7 +193,7 @@ sub _dstmMix {
                     }
 
                     if (!defined $tracks) {
-                        _mixFailed($client, $cb);
+                        _mixFailed($client, $cb, $numSpot);
                     } else {
                         main::DEBUGLOG && $log->debug("Num tracks to use:" . scalar(@$tracks));
                         foreach my $track (@$tracks) {
@@ -198,7 +202,7 @@ sub _dstmMix {
                         if (scalar @$tracks > 0) {
                             $cb->($client, $tracks);
                         } else {
-                            _mixFailed($client, $cb);
+                            _mixFailed($client, $cb, $numSpot);
                         }
                     }
                 },
@@ -206,7 +210,7 @@ sub _dstmMix {
                     my $response = shift;
                     my $error  = $response->error;
                     main::DEBUGLOG && $log->debug("Failed to fetch URL: $error");
-                    _mixFailed($client, $cb);
+                    _mixFailed($client, $cb, $numSpot);
                 }
             )->post($url, 'Content-Type' => 'application/json;charset=utf-8', $jsonData);
         }
@@ -224,8 +228,12 @@ sub title {
 }
 
 sub _mixFailed {
-    my ($client, $cb) = @_;
-    if (exists $INC{'Plugins/LastMix/DontStopTheMusic.pm'}) {
+    my ($client, $cb, $numSpot) = @_;
+
+    if ($numSpot > 0 && exists $INC{'Plugins/Spotty/DontStopTheMusic.pm'}) {
+        main::DEBUGLOG && $log->debug("Call through to Spotty");
+        Plugins::Spotty::DontStopTheMusic::dontStopTheMusic($client, $cb);
+    } elsif (exists $INC{'Plugins/LastMix/DontStopTheMusic.pm'}) {
         main::DEBUGLOG && $log->debug("Call through to LastMix");
         Plugins::LastMix::DontStopTheMusic::please($client, $cb);
     } else {
