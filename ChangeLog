@@ -14,6 +14,8 @@
     all).
 11. Make genre score adjustment configurable.
 12. Make essentia usage configurable.
+13. Add Essentia loudness.
+14. Add filtering on key.
 
 0.0.2
 -----

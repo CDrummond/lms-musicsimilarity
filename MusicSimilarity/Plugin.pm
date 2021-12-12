@@ -70,6 +70,8 @@ sub initPlugin {
         no_genre_match_adjustment    => 15,
         genre_group_match_adjustment => 7,
         max_bpm_diff                 => 50,
+        max_loundess_diff            => 5,
+        filter_key                   => 1,
         max_attrib_diff              => 60,
         attrib_weight                => 35
     });
@@ -307,6 +309,8 @@ sub _getMixData {
                         nogenrematchadj => $prefs->get('no_genre_match_adjustment'),
                         genregroupadj   => $prefs->get('genre_group_match_adjustment'),
                         maxbpmdiff      => $prefs->get('max_bpm_diff'),
+                        maxloudnessdiff => $prefs->get('max_loundess_diff'),
+                        filterkey       => $prefs->get('filter_key'),
                         maxattribdiff   => $prefs->get('max_attrib_diff'),
                         attribweight    => $prefs->get('attrib_weight'),
                         mpath           => @$mediaDirs[0]
@@ -333,6 +337,8 @@ sub _getSimilarData {
                         nogenrematchadj => $prefs->get('no_genre_match_adjustment'),
                         genregroupadj   => $prefs->get('genre_group_match_adjustment'),
                         maxbpmdiff      => $prefs->get('max_bpm_diff'),
+                        maxloudnessdiff => $prefs->get('max_loundess_diff'),
+                        filterkey       => $prefs->get('filter_key'),
                         maxattribdiff   => $prefs->get('max_attrib_diff'),
                         attribweight    => $prefs->get('attrib_weight'),
                         mpath           => @$mediaDirs[0]

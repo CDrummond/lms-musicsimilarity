@@ -127,13 +127,25 @@ MUSICSIMILARITY_ATTRIBUTE_HANDLING
 	EN	Attribute handling
 
 MUSICSIMILARITY_ATTRIBUTE_HANDLING_NOTE
-	EN	If you have analysed your tracks with Essentia, then this can be used to filter tracks based upon attributes (e.g. BPM, danceability, aggressiveness, etc.) and also for the similarity score. Setting both max BPM and attribute difference to their highest values will effectively disable attribute filtering.
+	EN	If you have analysed your tracks with Essentia, then this can be used to filter tracks based upon attributes (e.g. BPM, key, danceability, aggressiveness, etc.) and also for the similarity score.
 
 MUSICSIMILARITY_MAX_BPM_DIFF
 	EN	Max BPM difference
 
 MUSICSIMILARITY_MAX_BPM_DIFF_DESC
-	EN	Maximum difference in BPM between tracks.
+	EN	Maximum difference in BPM between tracks. Setting this to 150 effectively disables this.
+
+MUSICSIMILARITY_MAX_LOUDNESS_DIFF
+	EN	Max loudness difference
+
+MUSICSIMILARITY_MAX_LOUDNESS_DIFF_DESC
+	EN	Maximum difference in the loudness between tracks. Setting this to 10 effectively disables this.
+
+MUSICSIMILARITY_FILTER_KEY
+	EN	Filter on key
+
+MUSICSIMILARITY_FILTER_KEY_DESC
+	EN	Only accept tracks in the same, or similar, keys.
 
 MUSICSIMILARITY_MAX_ATTRIB_DIFF
 	EN	Max attribute difference (%)
