@@ -151,7 +151,7 @@ MUSICSIMILARITY_FILTER_ATTRIB
 	EN	Filter on atttributes
 
 MUSICSIMILARITY_FILTER_ATTRIB_DESC
-	EN	Only acccept tracks  that have simialr attributes.
+	EN	Only acccept tracks that have similar attributes.
 
 MUSICSIMILARITY_ATTRIB_WEIGHT
 	EN	Similarity weighting
