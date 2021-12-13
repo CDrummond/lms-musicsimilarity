@@ -147,11 +147,11 @@ MUSICSIMILARITY_FILTER_KEY
 MUSICSIMILARITY_FILTER_KEY_DESC
 	EN	Only accept tracks in the same, or similar, keys.
 
-MUSICSIMILARITY_MAX_ATTRIB_DIFF
-	EN	Max attribute difference (%)
+MUSICSIMILARITY_FILTER_ATTTRIB
+	EN	Filter on atttributes
 
-MUSICSIMILARITY_MAX_ATTRIB_DIFF_DESC
-	EN	Maximum difference in attributes between tracks. Essentia gives a probability score for each attribute, this setting specifies the maximum difference in this score.
+MUSICSIMILARITY_FILTER_ATTTRIB_DESC
+	EN	Only acccept tracks  that have simialr attributes.
 
 MUSICSIMILARITY_ATTRIB_WEIGHT
 	EN	Similarity weighting

@@ -72,7 +72,7 @@ sub initPlugin {
         max_bpm_diff                 => 50,
         max_loundess_diff            => 5,
         filter_key                   => 1,
-        max_attrib_diff              => 60,
+        filter_attrib                => 1,
         attrib_weight                => 35
     });
 
@@ -311,7 +311,7 @@ sub _getMixData {
                         maxbpmdiff      => $prefs->get('max_bpm_diff'),
                         maxloudnessdiff => $prefs->get('max_loundess_diff'),
                         filterkey       => $prefs->get('filter_key'),
-                        maxattribdiff   => $prefs->get('max_attrib_diff'),
+                        filterattrib    => $prefs->get('filter_attrib'),
                         attribweight    => $prefs->get('attrib_weight'),
                         mpath           => @$mediaDirs[0]
                     });
@@ -339,7 +339,7 @@ sub _getSimilarData {
                         maxbpmdiff      => $prefs->get('max_bpm_diff'),
                         maxloudnessdiff => $prefs->get('max_loundess_diff'),
                         filterkey       => $prefs->get('filter_key'),
-                        maxattribdiff   => $prefs->get('max_attrib_diff'),
+                        filterattrib    => $prefs->get('filter_attrib'),
                         attribweight    => $prefs->get('attrib_weight'),
                         mpath           => @$mediaDirs[0]
                     });

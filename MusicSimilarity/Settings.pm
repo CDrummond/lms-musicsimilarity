@@ -32,7 +32,7 @@ sub page {
 }
 
 sub prefs {
-	return ($prefs, qw(host port filter_genres filter_xmas exclude_artists exclude_albums min_duration max_duration no_repeat_artist no_repeat_album no_repeat_track dstm_tracks genre_groups no_genre_match_adjustment genre_group_match_adjustment max_bpm_diff max_loundess_diff filter_key max_attrib_diff attrib_weight));
+	return ($prefs, qw(host port filter_genres filter_xmas exclude_artists exclude_albums min_duration max_duration no_repeat_artist no_repeat_album no_repeat_track dstm_tracks genre_groups no_genre_match_adjustment genre_group_match_adjustment max_bpm_diff max_loundess_diff filter_key filter_attrib attrib_weight));
 }
 
 sub handler {
