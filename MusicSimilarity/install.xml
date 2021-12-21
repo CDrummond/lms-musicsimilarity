@@ -4,7 +4,7 @@
 	<id>e09bbd3f-1727-4339-864d-0bf4d7aa8fcc</id>
 	<name>MUSICSIMILARITY</name>
 	<module>Plugins::MusicSimilarity::Plugin</module>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<description>MUSICSIMILARITY_DESC</description>
 	<creator>Craig Drummond</creator>
 	<defaultState>
