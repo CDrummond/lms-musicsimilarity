@@ -135,10 +135,52 @@ sub postinitPlugin {
     }
 }
 
+sub _getMixableProperties {
+	my ($client, $count) = @_;
+
+	return unless $client;
+
+	$client = $client->master;
+
+	my ($trackId, $artist, $title, $duration, $tracks);
+
+    # Get last count*2 tracks from queue
+    foreach (reverse @{ Slim::Player::Playlist::playList($client) } ) {
+		($artist, $title, $duration, $trackId) = Slim::Plugin::DontStopTheMusic::Plugin->getMixablePropertiesFromTrack($client, $_);
+
+		next unless defined $artist && defined $title;
+
+		push @$tracks, $trackId;
+		if ($count && scalar @$tracks > ($count * 2)) {
+		    last;
+		}
+	}
+
+	if ($tracks && ref $tracks && scalar @$tracks && $duration) {
+		main::INFOLOG && $log->info("Auto-mixing from random tracks in current playlist");
+
+		if ($count && scalar @$tracks > $count) {
+			Slim::Player::Playlist::fischer_yates_shuffle($tracks);
+			splice(@$tracks, $count);
+		}
+
+		return $tracks;
+	} elsif (main::INFOLOG && $log->is_info) {
+		if (!$duration) {
+			$log->info("Found radio station last in the queue - don't start a mix.");
+		}
+		else {
+			$log->info("No mixable items found in current playlist!");
+		}
+	}
+
+	return;
+}
+
 sub _dstmMix {
     my ($client, $cb, $filterGenres) = @_;
     main::DEBUGLOG && $log->debug("Get similar tracks");
-    my $seedTracks = Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client, $NUM_SEED_TRACKS);
+    my $seedTracks = _getMixableProperties($client, $NUM_SEED_TRACKS); # Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client, $NUM_SEED_TRACKS);
     my $tracks = [];
 
     # don't seed from radio stations - only do if we're playing from some track based source
@@ -148,11 +190,11 @@ sub _dstmMix {
         my @seedsToUse = ();
         my $numSpot = 0;
         foreach my $seedTrack (@$seedTracks) {
-            my ($trackObj) = Slim::Schema->find('Track', $seedTrack->{id});
+            my ($trackObj) = Slim::Schema->find('Track', $seedTrack);
             if ($trackObj) {
-                main::DEBUGLOG && $log->debug("Seed " . $trackObj->path . " id:" . $seedTrack->{id});
+                main::DEBUGLOG && $log->debug("Seed " . $trackObj->path . " id:" . $seedTrack);
                 push @seedsToUse, $trackObj;
-                push @seedIds, $seedTrack->{id};
+                push @seedIds, $seedTrack;
                 if ( $trackObj->path =~ m/^spotify:/ ) {
                     $numSpot++;
                 }
