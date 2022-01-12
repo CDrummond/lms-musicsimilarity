@@ -9,8 +9,7 @@ play queue.
 The [Music Similarity](https://github.com/CDrummond/music-similarity) backend
 uses [Musly](https://github.com/CDrummond/musly) to locate similar tracks based
 upon a seed track's 'timbre'. The similar tracks are then further filtered by
-checking audio characteristics (BPM, danceability, aggressiveness, etc.) against
-those of the seed track.
+checking audio characteristics (BPM, Key, etc.) against those of the seed track.
 
 ## LMS Menus
 
@@ -19,3 +18,6 @@ those of the seed track.
 1. `Similar tracks` returns (up to) 100 tracks that are similar to the selected track, returned in similarity order.
 2. `Similar tracks by artist` returns (up to) 100 byt the same artist that are similar to the selected track, returned in similarity order.
 3. `Create similarity mix` creates a mix of (up to) 50 tracks based upon the selected artist, album, or track, returned in a shuffled order.
+
+*NOTE* These menus do not currently work with the `Default` LMS web skin, but do
+work with `Material Skin` and other controllers.
