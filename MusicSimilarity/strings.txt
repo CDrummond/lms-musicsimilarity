@@ -127,7 +127,7 @@ MUSICSIMILARITY_ATTRIBUTE_HANDLING
 	EN	Attribute handling
 
 MUSICSIMILARITY_ATTRIBUTE_HANDLING_NOTE
-	EN	If you have analysed your tracks with Essentia, then this can be used to filter tracks based upon attributes (e.g. BPM, key, danceability, aggressiveness, etc.) and also for the similarity score.
+	EN	Your track's have been anlysed for tonal attributes (e.g. BPM, Key, etc), these can then be used to filter tracks, etc.
 
 MUSICSIMILARITY_MAX_BPM_DIFF
 	EN	Max BPM difference

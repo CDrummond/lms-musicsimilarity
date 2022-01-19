@@ -30,12 +30,15 @@ if ( main::WEBUI ) {
 use Plugins::MusicSimilarity::Settings;
 
 my $initialized = 0;
+my $essentiaLevelQueries = 0;
 my $DEF_NUM_DSTM_TRACKS = 5;
 my $NUM_SEED_TRACKS = 5;
 my $MAX_PREVIOUS_TRACKS = 200;
 my $DEF_MAX_PREVIOUS_TRACKS = 100;
 my $NUM_MIX_TRACKS = 50;
 my $NUM_SIMILAR_TRACKS = 100;
+my $ESSENTIA_LEVEL_CHECK_DELAY = 15;
+my $ESSENTIA_LEVEL_ATTEMPTS = (5*60) / $ESSENTIA_LEVEL_CHECK_DELAY;
 
 my $log = Slim::Utils::Log->addLogCategory({
     'category'     => 'plugin.musicsimilarity',
@@ -73,7 +76,8 @@ sub initPlugin {
         max_loundess_diff            => 5,
         filter_key                   => 1,
         filter_attrib                => 1,
-        attrib_weight                => 35
+        attrib_weight                => 35,
+        essentia_level               => -1
     });
 
     if ( main::WEBUI ) {
@@ -114,6 +118,7 @@ sub initPlugin {
     ) );
     #...
 
+    _queryEssentiaStatus();
     $initialized = 1;
     return $initialized;
 }
@@ -133,6 +138,28 @@ sub postinitPlugin {
             _dstmMix($client, $cb, 0);
         });
     }
+}
+
+sub _queryEssentiaStatus {
+    Slim::Utils::Timers::killTimers(undef, \&_queryEssentiaStatus);
+    my $host = $prefs->get('host') || 'localhost';
+    my $port = $prefs->get('port') || 11000;
+    my $url = "http://$host:$port/api/essentia";
+    $essentiaLevelQueries += 1;
+    Slim::Networking::SimpleAsyncHTTP->new(
+        sub {
+            my $response = shift;
+            $prefs->set('essentia_level', int($response->content));
+            main::DEBUGLOG && $log->debug("Essentia level: " . $prefs->get('essentia_level'));
+        },
+        sub {
+            if ($essentiaLevelQueries<=$ESSENTIA_LEVEL_ATTEMPTS) {
+                main::DEBUGLOG && $log->debug("Failed to determine Essentia level, will try again afer " . $ESSENTIA_LEVEL_CHECK_DELAY . " seconds");
+                Slim::Utils::Timers::killTimers(undef, \&_queryEssentiaStatus);
+                Slim::Utils::Timers::setTimer(undef, time() + $ESSENTIA_LEVEL_CHECK_DELAY, \&_queryEssentiaStatus);
+            }
+        }
+    )->get($url);
 }
 
 sub _getMixableProperties {
