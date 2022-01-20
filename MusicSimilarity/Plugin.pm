@@ -29,16 +29,18 @@ if ( main::WEBUI ) {
 
 use Plugins::MusicSimilarity::Settings;
 
+
 my $initialized = 0;
 my $essentiaLevelQueries = 0;
-my $DEF_NUM_DSTM_TRACKS = 5;
-my $NUM_SEED_TRACKS = 5;
-my $MAX_PREVIOUS_TRACKS = 200;
-my $DEF_MAX_PREVIOUS_TRACKS = 100;
-my $NUM_MIX_TRACKS = 50;
-my $NUM_SIMILAR_TRACKS = 100;
-my $ESSENTIA_LEVEL_CHECK_DELAY = 15;
-my $ESSENTIA_LEVEL_ATTEMPTS = (5*60) / $ESSENTIA_LEVEL_CHECK_DELAY;
+use constant DEF_NUM_DSTM_TRACKS => 5;
+use constant NUM_SEED_TRACKS => 5;
+use constant MAX_PREVIOUS_TRACKS => 200;
+use constant DEF_MAX_PREVIOUS_TRACKS => 100;
+use constant NUM_MIX_TRACKS => 50;
+use constant NUM_SIMILAR_TRACKS => 100;
+use constant ESSENTIA_LEVEL_CHECK_DELAY => 15;
+use constant ESSENTIA_LEVEL_ATTEMPTS => (5*60) / ESSENTIA_LEVEL_CHECK_DELAY;
+use constant MENU_WEIGHT => 95;
 
 my $log = Slim::Utils::Log->addLogCategory({
     'category'     => 'plugin.musicsimilarity',
@@ -67,8 +69,8 @@ sub initPlugin {
         max_duration                 => 0,
         no_repeat_artist             => 15,
         no_repeat_album              => 25,
-        no_repeat_track              => $DEF_MAX_PREVIOUS_TRACKS,
-        dstm_tracks                  => $DEF_NUM_DSTM_TRACKS,
+        no_repeat_track              => DEF_MAX_PREVIOUS_TRACKS,
+        dstm_tracks                  => DEF_NUM_DSTM_TRACKS,
         timeout                      => 30,
         no_genre_match_adjustment    => 15,
         genre_group_match_adjustment => 7,
@@ -140,6 +142,27 @@ sub postinitPlugin {
     }
 }
 
+sub _registerMenu {
+    Slim::Control::Jive::registerPluginMenu([{
+        stringToken => 'MUSICSIMILARITY_ATTRMIX',
+        weight      => MENU_WEIGHT,
+        id          => 'attrmix',
+        node        => 'myMusic',
+        actions => {
+            go => {
+                player => 0,
+                cmd    => [ 'musicsimilarity', 'attrmixes' ],
+                params => {
+                    menu => 1,
+                },
+            },
+        },
+        window         => {
+            'icon-id'  => 'plugins/MusicSimilarity/html/images/icon.png'
+        },
+    }]);
+}
+
 sub _queryEssentiaStatus {
     Slim::Utils::Timers::killTimers(undef, \&_queryEssentiaStatus);
     my $host = $prefs->get('host') || 'localhost';
@@ -149,14 +172,18 @@ sub _queryEssentiaStatus {
     Slim::Networking::SimpleAsyncHTTP->new(
         sub {
             my $response = shift;
-            $prefs->set('essentia_level', int($response->content));
-            main::DEBUGLOG && $log->debug("Essentia level: " . $prefs->get('essentia_level'));
+            my $level = int($response->content);
+            $prefs->set('essentia_level', $level);
+            main::DEBUGLOG && $log->debug("Essentia level: " . $level);
+            if ($level > 1) {
+                _registerMenu();
+            }
         },
         sub {
-            if ($essentiaLevelQueries<=$ESSENTIA_LEVEL_ATTEMPTS) {
-                main::DEBUGLOG && $log->debug("Failed to determine Essentia level, will try again afer " . $ESSENTIA_LEVEL_CHECK_DELAY . " seconds");
+            if ($essentiaLevelQueries<=ESSENTIA_LEVEL_ATTEMPTS) {
+                main::DEBUGLOG && $log->debug("Failed to determine Essentia level, will try again afer " . ESSENTIA_LEVEL_CHECK_DELAY . " seconds");
                 Slim::Utils::Timers::killTimers(undef, \&_queryEssentiaStatus);
-                Slim::Utils::Timers::setTimer(undef, time() + $ESSENTIA_LEVEL_CHECK_DELAY, \&_queryEssentiaStatus);
+                Slim::Utils::Timers::setTimer(undef, time() + ESSENTIA_LEVEL_CHECK_DELAY, \&_queryEssentiaStatus);
             }
         }
     )->get($url);
@@ -207,7 +234,7 @@ sub _getMixableProperties {
 sub _dstmMix {
     my ($client, $cb, $filterGenres) = @_;
     main::DEBUGLOG && $log->debug("Get similar tracks");
-    my $seedTracks = _getMixableProperties($client, $NUM_SEED_TRACKS); # Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client, $NUM_SEED_TRACKS);
+    my $seedTracks = _getMixableProperties($client, NUM_SEED_TRACKS); # Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client, NUM_SEED_TRACKS);
     my $tracks = [];
 
     # don't seed from radio stations - only do if we're playing from some track based source
@@ -230,13 +257,13 @@ sub _dstmMix {
 
         if (scalar @seedsToUse > 0) {
             my $maxNumPrevTracks = $prefs->get('no_repeat_track');
-            if ($maxNumPrevTracks<0 || $maxNumPrevTracks>$MAX_PREVIOUS_TRACKS) {
-                $maxNumPrevTracks = $DEF_MAX_PREVIOUS_TRACKS;
+            if ($maxNumPrevTracks<0 || $maxNumPrevTracks>MAX_PREVIOUS_TRACKS) {
+                $maxNumPrevTracks = DEF_MAX_PREVIOUS_TRACKS;
             }
             my $previousTracks = _getPreviousTracks($client, $maxNumPrevTracks);
             main::DEBUGLOG && $log->debug("Num tracks to previous: " . ($previousTracks ? scalar(@$previousTracks) : 0));
 
-            my $dstm_tracks = $prefs->get('dstm_tracks') || $DEF_NUM_DSTM_TRACKS;
+            my $dstm_tracks = $prefs->get('dstm_tracks') || DEF_NUM_DSTM_TRACKS;
             my $jsonData = _getMixData(\@seedsToUse, $previousTracks ? \@$previousTracks : undef, $dstm_tracks, 1, $filterGenres);
             my $host = $prefs->get('host') || 'localhost';
             my $port = $prefs->get('port') || 11000;
@@ -566,6 +593,10 @@ sub similarTracksByArtistHandler {
     return _trackSimilarityHandler( 1, @_ );
 }
 
+sub _attrMixes {
+    my $request = shift;
+}
+
 sub cliMix {
     my $request = shift;
 
@@ -577,9 +608,13 @@ sub cliMix {
 
     my $cmd = $request->getParam('_cmd');
 
-    if ($request->paramUndefinedOrNotOneOf($cmd, ['mix', 'list']) ) {
+    if ($request->paramUndefinedOrNotOneOf($cmd, ['mix', 'list', 'attrmixes']) ) {
         $request->setStatusBadParams();
         return;
+    }
+
+    if ($cmd eq 'attrmixes') {
+        return _attrMixes($request);
     }
 
     # get our parameters
@@ -631,9 +666,9 @@ sub cliMix {
                 }
             }
         }
-        if (scalar @seedsToUse > $NUM_SEED_TRACKS) {
+        if (scalar @seedsToUse > NUM_SEED_TRACKS) {
             Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
-            @seedsToUse = splice(@seedsToUse, 0, $NUM_SEED_TRACKS);
+            @seedsToUse = splice(@seedsToUse, 0, NUM_SEED_TRACKS);
         }
 
         foreach my $trackObj (@seedsToUse) {
@@ -644,7 +679,7 @@ sub cliMix {
     main::DEBUGLOG && $log->debug("Num tracks for similarity mix/list: " . scalar(@seedsToUse));
 
     if (scalar @seedsToUse > 0) {
-        my $maxTracks = $isMix ? $NUM_MIX_TRACKS : $NUM_SIMILAR_TRACKS;
+        my $maxTracks = $isMix ? NUM_MIX_TRACKS : NUM_SIMILAR_TRACKS;
         my $jsonData = $isMix ? _getMixData(\@seedsToUse, undef, $maxTracks * 2, 1, $prefs->get('filter_genres') || 0) : _getSimilarData(@seedsToUse[0], $request->getParam('byArtist') || 0, $maxTracks);
         my $host = $prefs->get('host') || 'localhost';
         my $port = $prefs->get('port') || 11000;
