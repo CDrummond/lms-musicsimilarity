@@ -748,13 +748,8 @@ sub _callApi {
                     $track = Win32::GetANSIPathName($track);
                 }
 
-                main::DEBUGLOG && $log->debug("TRACK $track");
                 if ( -e $track || -e Slim::Utils::Unicode::utf8encode_locale($track) || index($track, 'file:///')==0) {
-                main::DEBUGLOG && $log->debug("A");
                     my $trackObj = Slim::Schema->objectForUrl(Slim::Utils::Misc::fileURLFromPath($track));
-                    if (blessed $trackObj) {
-                        main::DEBUGLOG && $log->debug("B");
-                    }
                     if (blessed $trackObj && (!$isMix || ($trackObj->id != $seedToAdd->id))) {
                         push @usableTracks, $trackObj;
                         main::DEBUGLOG && $log->debug("..." . $track);
