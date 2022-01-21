@@ -15,6 +15,7 @@ use LWP::UserAgent;
 use JSON::XS::VersionOneAndTwo;
 use File::Basename;
 use File::Slurp;
+use File::Spec;
 
 use Slim::Player::ProtocolHandlers;
 use Slim::Utils::Log;
@@ -41,6 +42,7 @@ use constant NUM_SIMILAR_TRACKS => 100;
 use constant ESSENTIA_LEVEL_CHECK_DELAY => 15;
 use constant ESSENTIA_LEVEL_ATTEMPTS => (5*60) / ESSENTIA_LEVEL_CHECK_DELAY;
 use constant MENU_WEIGHT => 95;
+use constant ATTRMIX_FILE_EXT => '.attrmix';
 
 my $log = Slim::Utils::Log->addLogCategory({
     'category'     => 'plugin.musicsimilarity',
@@ -143,6 +145,7 @@ sub postinitPlugin {
 }
 
 sub _registerMenu {
+    main::DEBUGLOG && $log->debug("Register menu");
     Slim::Control::Jive::registerPluginMenu([{
         stringToken => 'MUSICSIMILARITY_ATTRMIX',
         weight      => MENU_WEIGHT,
@@ -387,7 +390,6 @@ sub _getMixData {
         }
     }
 
-    my $http = LWP::UserAgent->new;
     my $mediaDirs = $serverprefs->get('mediadirs');
     my $jsonData = to_json({
                         count           => $trackCount,
@@ -411,7 +413,7 @@ sub _getMixData {
                         attribweight    => $prefs->get('attrib_weight'),
                         mpath           => @$mediaDirs[0]
                     });
-    $http->timeout($prefs->get('timeout') || 30);
+
     main::DEBUGLOG && $log->debug("Request $jsonData");
     return $jsonData;
 }
@@ -522,8 +524,8 @@ sub _objectInfoHandler {
     }
 
     return {
-        type      => 'redirect',
-        jive      => {
+        type => 'redirect',
+        jive => {
             actions => {
                 go => {
                     player => 0,
@@ -593,8 +595,274 @@ sub similarTracksByArtistHandler {
     return _trackSimilarityHandler( 1, @_ );
 }
 
+sub _listAttrMixes {
+    my @mixes  = ();
+    main::DEBUGLOG && $log->debug("List");
+	my $dir = $serverprefs->get('playlistdir');
+	my $len = length(ATTRMIX_FILE_EXT) * -1;
+	if ($dir) {
+	    my @files = glob($dir . '/*' . ATTRMIX_FILE_EXT);
+	    foreach my $file(@files) {
+	        main::DEBUGLOG && $log->debug("FILE:" . $file);
+	        push(@mixes, substr(basename($file), 0, $len));
+	    }
+	}
+	return \@mixes;
+}
+
 sub _attrMixes {
+    my $request  = shift;
+    my $mixes    = _listAttrMixes();
+    my $menu     = $request->getParam('menu');
+    my $menuMode = defined $menu;
+    my $loopname = $menuMode ? 'item_loop' : 'mixes_loop';
+    my $count    = 0;
+
+    if ($menuMode) {
+        $request->addResult('offset', 0);
+    }
+
+    for my $item (@$mixes) {
+        if ($menuMode) {
+            $request->addResultLoop($loopname, $count, 'actions', {
+                go => {
+                    player => 0,
+                    cmd    => [ 'musicsimilarity', 'mix' ],
+                    params => {
+                        menu => 1,
+                        mix  => $item
+                    }
+                },
+            });
+            $request->addResultLoop($loopname, $count, 'text', $item);
+            $request->addResultLoop($loopname, $count, 'id', $item);
+            $request->addResultLoop($loopname, $count, 'type', 'playlist');
+        } else {
+            $request->addResultLoop($loopname, $count, 'name', $item);
+        }
+        $count++;
+    }
+
+    $request->addResult('count', $count);
+    $request->setStatusDone();
+}
+
+sub _readAttrMixJson {
+    my $mix = shift;
+    my $dir = $serverprefs->get('playlistdir');
+    my $mixFile = File::Spec->catpath('', $dir, $mix . ATTRMIX_FILE_EXT); # First arg ignored???
+    if (! -e $mixFile) {
+        main::DEBUGLOG && $log->debug("Request mix file, $mixFile, does not exist");
+        return;
+    }
+
+    if (open my $fh, "<", $mixFile) {
+        main::DEBUGLOG && $log->debug("Reading $mixFile");
+        my $mediaDirs = $serverprefs->get('mediadirs');
+        my %req = ( 'format' => 'text',
+                    'mpath'  => @$mediaDirs[0]
+                  );
+        my $ok = 0;
+        while (my $line = <$fh>) {
+            if (rindex($line, '#', 0)==-1) {
+                $line =~ s/[\r\n]+$//;
+                my @parts = split /=/, $line;
+                if (scalar(@parts)==2) {
+                    if (@parts[0] eq 'genre') {
+                        my @genres = split /;/, @parts[1];
+                        $req{@parts[0]}=[@genres];
+                    } else {
+                        $req{@parts[0]}=@parts[1];
+                    }
+                    $ok = 1;
+                }
+            }
+        }
+        close $fh;
+        if ($ok) {
+            return to_json(\%req);
+        }
+    }
+}
+
+sub _attrMix {
     my $request = shift;
+    my $mix = $request->getParam('mix');
+    if ($mix) {
+        my $jsonData = _readAttrMixJson($mix);
+        if ($jsonData) {
+            _callApi($request, 'attrmix', $jsonData, 500, 0, undef);
+            return;
+        }
+    }
+    $request->setStatusBadDispatch();
+}
+
+sub _callApi {
+    my $request = shift;
+    my $api = shift;
+    my $jsonData = shift;
+    my $maxTracks = shift;
+    my $isMix = shift;
+    my $seedToAdd = shift;
+    my $host = $prefs->get('host') || 'localhost';
+    my $port = $prefs->get('port') || 11000;
+    my $url = "http://$host:$port/api/$api";
+    my $http = LWP::UserAgent->new;
+
+    $http->timeout($prefs->get('timeout') || 30);
+
+    main::DEBUGLOG && $log->debug("Call $url");
+    $request->setStatusProcessing();
+    Slim::Networking::SimpleAsyncHTTP->new(
+        sub {
+            my $response = shift;
+            main::DEBUGLOG && $log->debug("Received API response ");
+
+            my @songs = split(/\n/, $response->content);
+            my $count = scalar @songs;
+            my $tracks = ();
+
+            if ($isMix) {
+                Slim::Player::Playlist::fischer_yates_shuffle(\@songs);
+            }
+
+            my $tags     = $request->getParam('tags') || 'al';
+            my $menu     = $request->getParam('menu');
+            my $menuMode = defined $menu;
+            my $loopname = $menuMode ? 'item_loop' : 'titles_loop';
+            my $chunkCount = 0;
+            my $useContextMenu = $request->getParam('useContextMenu');
+            my @usableTracks = ();
+            my @ids          = ();
+
+            if ($isMix) {
+                # TODO: Add more?
+                push @usableTracks, $seedToAdd;
+                push @ids, $seedToAdd->id;
+            }
+
+            foreach my $track (@songs) {
+                # Bug 4281 - need to convert from UTF-8 on Windows.
+                if (main::ISWINDOWS && !-e track && -e Win32::GetANSIPathName($track)) {
+                    $track = Win32::GetANSIPathName($track);
+                }
+
+                main::DEBUGLOG && $log->debug("TRACK $track");
+                if ( -e $track || -e Slim::Utils::Unicode::utf8encode_locale($track) || index($track, 'file:///')==0) {
+                main::DEBUGLOG && $log->debug("A");
+                    my $trackObj = Slim::Schema->objectForUrl(Slim::Utils::Misc::fileURLFromPath($track));
+                    if (blessed $trackObj) {
+                        main::DEBUGLOG && $log->debug("B");
+                    }
+                    if (blessed $trackObj && (!$isMix || ($trackObj->id != $seedToAdd->id))) {
+                        push @usableTracks, $trackObj;
+                        main::DEBUGLOG && $log->debug("..." . $track);
+                        push @ids, $trackObj->id;
+                        if (scalar(@ids) >= $maxTracks) {
+                            last;
+                        }
+                    }
+                }
+            }
+
+            if ($menuMode) {
+                my $idList = join( ",", @ids );
+                my $base = {
+	                actions => {
+		                go => {
+			                cmd => ['trackinfo', 'items'],
+			                params => {
+				                menu => 'nowhere',
+				                useContextMenu => '1',
+			                },
+			                itemsParams => 'params',
+		                },
+		                play => {
+			                cmd => ['playlistcontrol'],
+			                params => {
+				                cmd  => 'load',
+				                menu => 'nowhere',
+			                },
+			                nextWindow => 'nowPlaying',
+			                itemsParams => 'params',
+		                },
+		                add =>  {
+			                cmd => ['playlistcontrol'],
+			                params => {
+				                cmd  => 'add',
+				                menu => 'nowhere',
+			                },
+			                itemsParams => 'params',
+		                },
+		                'add-hold' =>  {
+			                cmd => ['playlistcontrol'],
+			                params => {
+				                cmd  => 'insert',
+				                menu => 'nowhere',
+			                },
+			                itemsParams => 'params',
+		                },
+	                },
+                };
+
+                if ($useContextMenu) {
+	                # "+ is more"
+	                $base->{'actions'}{'more'} = $base->{'actions'}{'go'};
+	                # "go is play"
+	                $base->{'actions'}{'go'} = $base->{'actions'}{'play'};
+                }
+                $request->addResult('base', $base);
+
+                $request->addResult('offset', 0);
+                #$request->addResult('text', $request->string('MUSICMAGIX_MIX'));
+                my $thisWindow = {
+		                'windowStyle' => 'icon_list',
+		                'text'       => $request->string('MUSICSIMILARITY_MIX'),
+                };
+                $request->addResult('window', $thisWindow);
+
+                # add an item for "play this mix"
+                $request->addResultLoop($loopname, $chunkCount, 'nextWindow', 'nowPlaying');
+                $request->addResultLoop($loopname, $chunkCount, 'text', $request->string($isMix ? 'MUSICSIMILARITY_PLAYTHISMIX' : 'MUSICSIMILARITY_PLAYTHISLIST'));
+                $request->addResultLoop($loopname, $chunkCount, 'icon-id', '/html/images/playall.png');
+                my $actions = {
+	                'go' => {
+		                'cmd' => ['playlistcontrol', 'cmd:load', 'menu:nowhere', 'track_id:' . $idList],
+	                },
+	                'play' => {
+		                'cmd' => ['playlistcontrol', 'cmd:load', 'menu:nowhere', 'track_id:' . $idList],
+	                },
+	                'add' => {
+		                'cmd' => ['playlistcontrol', 'cmd:add', 'menu:nowhere', 'track_id:' . $idList],
+	                },
+	                'add-hold' => {
+		                'cmd' => ['playlistcontrol', 'cmd:insert', 'menu:nowhere', 'track_id:' . $idList],
+	                },
+                };
+                $request->addResultLoop($loopname, $chunkCount, 'actions', $actions);
+                $chunkCount++;
+            }
+
+            foreach my $trackObj (@usableTracks) {
+                if ($menuMode) {
+                    Slim::Control::Queries::_addJiveSong($request, $loopname, $chunkCount, $chunkCount, $trackObj);
+                } else {
+                    Slim::Control::Queries::_addSong($request, $loopname, $chunkCount, $trackObj, $tags);
+                }
+                $chunkCount++;
+            }
+            main::DEBUGLOG && $log->debug("Num tracks to use:" . ($chunkCount - 1)); # Remove 'Play this mix' from count
+            $request->addResult('count', $chunkCount);
+            $request->setStatusDone();
+        },
+        sub {
+            my $response = shift;
+            my $error  = $response->error;
+            main::DEBUGLOG && $log->debug("Failed to fetch URL: $error");
+            $request->setStatusDone();
+        }
+    )->post($url, 'Timeout' => 30, 'Content-Type' => 'application/json;charset=utf-8', $jsonData);
 }
 
 sub cliMix {
@@ -614,7 +882,16 @@ sub cliMix {
     }
 
     if ($cmd eq 'attrmixes') {
-        return _attrMixes($request);
+        _attrMixes($request);
+        return;
+    }
+
+    if ($cmd eq 'mix') {
+        my $attrMix = $request->getParam('mix');
+        if ($attrMix) {
+            _attrMix($request);
+            return;
+        }
     }
 
     # get our parameters
@@ -681,159 +958,11 @@ sub cliMix {
     if (scalar @seedsToUse > 0) {
         my $maxTracks = $isMix ? NUM_MIX_TRACKS : NUM_SIMILAR_TRACKS;
         my $jsonData = $isMix ? _getMixData(\@seedsToUse, undef, $maxTracks * 2, 1, $prefs->get('filter_genres') || 0) : _getSimilarData(@seedsToUse[0], $request->getParam('byArtist') || 0, $maxTracks);
-        my $host = $prefs->get('host') || 'localhost';
-        my $port = $prefs->get('port') || 11000;
-        my $url = $isMix ? "http://$host:$port/api/similar" : "http://$host:$port/api/dump";
-        $request->setStatusProcessing();
-        Slim::Networking::SimpleAsyncHTTP->new(
-            sub {
-                my $response = shift;
-                main::DEBUGLOG && $log->debug("Received API response");
 
-                my @songs = split(/\n/, $response->content);
-                my $count = scalar @songs;
-                my $tracks = ();
-
-                if ($isMix) {
-                    Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
-                }
-                my $seedToAdd = @seedsToUse[0];
-
-                if ($isMix) {
-                    Slim::Player::Playlist::fischer_yates_shuffle(\@songs);
-                }
-
-                my $tags     = $request->getParam('tags') || 'al';
-                my $menu     = $request->getParam('menu');
-                my $menuMode = defined $menu;
-                my $loopname = $menuMode ? 'item_loop' : 'titles_loop';
-                my $chunkCount = 0;
-                my $useContextMenu = $request->getParam('useContextMenu');
-                my @usableTracks = ();
-                my @ids          = ();
-
-                if ($isMix) {
-                    # TODO: Add more?
-                    push @usableTracks, $seedToAdd;
-                    push @ids, $seedToAdd->id;
-                }
-
-                foreach my $track (@songs) {
-                    # Bug 4281 - need to convert from UTF-8 on Windows.
-                    if (main::ISWINDOWS && !-e track && -e Win32::GetANSIPathName($track)) {
-                        $track = Win32::GetANSIPathName($track);
-                    }
-
-                    if ( -e $track || -e Slim::Utils::Unicode::utf8encode_locale($track) || index($track, 'file:///')==0) {
-                        my $trackObj = Slim::Schema->objectForUrl(Slim::Utils::Misc::fileURLFromPath($track));
-                        if (blessed $trackObj && (!$isMix || ($trackObj->id != $seedToAdd->id))) {
-                            push @usableTracks, $trackObj;
-                            main::DEBUGLOG && $log->debug("..." . $track);
-                            push @ids, $trackObj->id;
-                            if (scalar(@ids) >= $maxTracks) {
-                                last;
-                            }
-                        }
-                    }
-                }
-
-                if ($menuMode) {
-                    my $idList = join( ",", @ids );
-	                my $base = {
-		                actions => {
-			                go => {
-				                cmd => ['trackinfo', 'items'],
-				                params => {
-					                menu => 'nowhere',
-					                useContextMenu => '1',
-				                },
-				                itemsParams => 'params',
-			                },
-			                play => {
-				                cmd => ['playlistcontrol'],
-				                params => {
-					                cmd  => 'load',
-					                menu => 'nowhere',
-				                },
-				                nextWindow => 'nowPlaying',
-				                itemsParams => 'params',
-			                },
-			                add =>  {
-				                cmd => ['playlistcontrol'],
-				                params => {
-					                cmd  => 'add',
-					                menu => 'nowhere',
-				                },
-				                itemsParams => 'params',
-			                },
-			                'add-hold' =>  {
-				                cmd => ['playlistcontrol'],
-				                params => {
-					                cmd  => 'insert',
-					                menu => 'nowhere',
-				                },
-				                itemsParams => 'params',
-			                },
-		                },
-	                };
-
-	                if ($useContextMenu) {
-		                # "+ is more"
-		                $base->{'actions'}{'more'} = $base->{'actions'}{'go'};
-		                # "go is play"
-		                $base->{'actions'}{'go'} = $base->{'actions'}{'play'};
-	                }
-	                $request->addResult('base', $base);
-
-	                $request->addResult('offset', 0);
-	                #$request->addResult('text', $request->string('MUSICMAGIX_MIX'));
-	                my $thisWindow = {
-			                'windowStyle' => 'icon_list',
-			                'text'       => $request->string('MUSICSIMILARITY_MIX'),
-	                };
-	                $request->addResult('window', $thisWindow);
-
-	                # add an item for "play this mix"
-	                $request->addResultLoop($loopname, $chunkCount, 'nextWindow', 'nowPlaying');
-	                $request->addResultLoop($loopname, $chunkCount, 'text', $request->string($isMix ? 'MUSICSIMILARITY_PLAYTHISMIX' : 'MUSICSIMILARITY_PLAYTHISLIST'));
-	                $request->addResultLoop($loopname, $chunkCount, 'icon-id', '/html/images/playall.png');
-	                my $actions = {
-		                'go' => {
-			                'cmd' => ['playlistcontrol', 'cmd:load', 'menu:nowhere', 'track_id:' . $idList],
-		                },
-		                'play' => {
-			                'cmd' => ['playlistcontrol', 'cmd:load', 'menu:nowhere', 'track_id:' . $idList],
-		                },
-		                'add' => {
-			                'cmd' => ['playlistcontrol', 'cmd:add', 'menu:nowhere', 'track_id:' . $idList],
-		                },
-		                'add-hold' => {
-			                'cmd' => ['playlistcontrol', 'cmd:insert', 'menu:nowhere', 'track_id:' . $idList],
-		                },
-	                };
-	                $request->addResultLoop($loopname, $chunkCount, 'actions', $actions);
-	                $chunkCount++;
-                }
-
-                foreach my $trackObj (@usableTracks) {
-                    if ($menuMode) {
-                        Slim::Control::Queries::_addJiveSong($request, $loopname, $chunkCount, $chunkCount, $trackObj);
-                    } else {
-                        Slim::Control::Queries::_addSong($request, $loopname, $chunkCount, $trackObj, $tags);
-                    }
-                    $chunkCount++;
-                }
-                main::DEBUGLOG && $log->debug("Num tracks to use:" . ($chunkCount - 1)); # Remove 'Play this mix' from count
-                $request->addResult('count', $chunkCount);
-                $request->setStatusDone();
-            },
-            sub {
-                my $response = shift;
-                my $error  = $response->error;
-                main::DEBUGLOG && $log->debug("Failed to fetch URL: $error");
-                $request->setStatusDone();
-            }
-        )->post($url, 'Timeout' => 30, 'Content-Type' => 'application/json;charset=utf-8', $jsonData);
+        if ($isMix) {
+            Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
+        }
+        _callApi($request, $isMix ? 'similar' : 'dump', $jsonData, $maxTracks, $isMix, $isMix ? @seedsToUse[0] : undef);
         return;
     }
     $request->setStatusBadDispatch();
