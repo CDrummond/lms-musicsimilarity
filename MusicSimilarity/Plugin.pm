@@ -89,7 +89,7 @@ sub initPlugin {
     }
 
     # 'Create similarity mix'....
-    Slim::Control::Request::addDispatch(['musicsimilarity', '_cmd'], [1, 1, 1, \&cliMix]);
+    Slim::Control::Request::addDispatch(['musicsimilarity', '_cmd'], [0, 1, 1, \&cliMix]);
 
     Slim::Menu::TrackInfo->registerInfoProvider( musicsimilaritymix => (
         above    => 'favorites',
@@ -603,7 +603,7 @@ sub _listAttrMixes {
 	if ($dir) {
 	    my @files = glob($dir . '/*' . ATTRMIX_FILE_EXT);
 	    foreach my $file(@files) {
-	        main::DEBUGLOG && $log->debug("FILE:" . $file);
+	        main::DEBUGLOG && $log->debug("Mix file:" . $file);
 	        push(@mixes, substr(basename($file), 0, $len));
 	    }
 	}
@@ -649,6 +649,7 @@ sub _attrMixes {
 
 sub _readAttrMixJson {
     my $mix = shift;
+    my $fileOnly = shift;
     my $dir = $serverprefs->get('playlistdir');
     my $mixFile = File::Spec->catpath('', $dir, $mix . ATTRMIX_FILE_EXT); # First arg ignored???
     if (! -e $mixFile) {
@@ -659,9 +660,7 @@ sub _readAttrMixJson {
     if (open my $fh, "<", $mixFile) {
         main::DEBUGLOG && $log->debug("Reading $mixFile");
         my $mediaDirs = $serverprefs->get('mediadirs');
-        my %req = ( 'format' => 'text',
-                    'mpath'  => @$mediaDirs[0]
-                  );
+        my %req = $fileOnly ? () : ( 'format' => 'text', 'mpath'  => @$mediaDirs[0] );
         my $ok = 0;
         while (my $line = <$fh>) {
             if (rindex($line, '#', 0)==-1) {
@@ -689,10 +688,78 @@ sub _attrMix {
     my $request = shift;
     my $mix = $request->getParam('mix');
     if ($mix) {
-        my $jsonData = _readAttrMixJson($mix);
+        my $jsonData = _readAttrMixJson($mix, 0);
         if ($jsonData) {
             _callApi($request, 'attrmix', $jsonData, 500, 0, undef);
             return;
+        }
+    }
+    $request->setStatusBadDispatch();
+}
+
+sub _readMix {
+    my $request = shift;
+    my $mix = $request->getParam('mix');
+    if ($mix) {
+        my $jsonData = _readAttrMixJson($mix, 1);
+        if ($jsonData) {
+            $request->addResult('body', $jsonData);
+            $request->setStatusDone();
+            return;
+        }
+    }
+    $request->setStatusBadDispatch();
+}
+
+sub _saveMix {
+    my $request = shift;
+    my $mix = $request->getParam('mix');
+    my $json = $request->getParam('body');
+    if ($mix && $json) {
+        my $body = eval { from_json($json) };
+        if ( $@ ) {
+            main::DEBUGLOG && $log->error("Failed to decode JSON");
+            $request->setStatusBadDispatch();
+            return
+        }
+        my $dir = $serverprefs->get('playlistdir');
+        my $mixFile = File::Spec->catpath('', $dir, $mix . ATTRMIX_FILE_EXT); # First arg ignored???
+        main::DEBUGLOG && $log->debug("Saving $mixFile");
+        if (open my $fh, ">", $mixFile) {
+            my %hash = %{$body};
+            foreach my $key (keys %hash) {
+                if ($key eq 'genre') {
+                    my $v = join(";", @{%hash{$key}});
+                    print $fh "$key=$v\n";
+                } else {
+                    my $v=%hash{$key};
+                    print $fh "$key=$v\n";
+                }
+            }
+            close $fh;
+            $request->setStatusDone();
+            return;
+        }
+    }
+    $request->setStatusBadDispatch();
+}
+
+sub _delMix {
+    my $request = shift;
+    my $mix = $request->getParam('mix');
+    if ($mix) {
+        my $dir = $serverprefs->get('playlistdir');
+        my $mixFile = File::Spec->catpath('', $dir, $mix . ATTRMIX_FILE_EXT); # First arg ignored???
+        if (-e $mixFile) {
+            unlink($mixFile);
+            if (! -e $mixFile) {
+                $request->setStatusDone();
+                return;
+            } else {
+                main::DEBUGLOG && $log->error("Failed to delete $mixFile");
+            }
+        } else {
+            main::DEBUGLOG && $log->debug("Mix file $mixFile does not exist");
         }
     }
     $request->setStatusBadDispatch();
@@ -870,14 +937,29 @@ sub cliMix {
     }
 
     my $cmd = $request->getParam('_cmd');
-
-    if ($request->paramUndefinedOrNotOneOf($cmd, ['mix', 'list', 'attrmixes']) ) {
+main::DEBUGLOG && $log->debug("CMD:$cmd");
+    if ($request->paramUndefinedOrNotOneOf($cmd, ['mix', 'list', 'attrmixes', 'readmix', 'savemix', 'delmix']) ) {
         $request->setStatusBadParams();
         return;
     }
 
     if ($cmd eq 'attrmixes') {
         _attrMixes($request);
+        return;
+    }
+
+    if ($cmd eq 'readmix') {
+        _readMix($request);
+        return;
+    }
+
+    if ($cmd eq 'savemix') {
+        _saveMix($request);
+        return;
+    }
+
+    if ($cmd eq 'delmix') {
+        _delMix($request);
         return;
     }
 
