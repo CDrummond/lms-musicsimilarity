@@ -123,6 +123,20 @@ sub initPlugin {
     #...
 
     _queryEssentiaStatus();
+
+    if ( Slim::Utils::PluginManager->isEnabled('Plugins::MaterialSkin::Plugin') ) {
+        my $rc = eval {
+            require Plugins::MaterialSkin::Extensions;
+            Plugins::MaterialSkin::Extensions::addJavascript("plugins/MusicSimilarity/html/js/musicsimilarity.js");
+            Plugins::MaterialSkin::Extensions::addDialog("musicsimilarity");
+            main::DEBUGLOG && $log->debug("Registered javascript/div with Material");
+            1;
+        };
+        if (! $rc) {
+            main::DEBUGLOG && $log->debug("Failed to register javascript with Material");
+        }
+    }
+
     $initialized = 1;
     return $initialized;
 }
@@ -151,6 +165,7 @@ sub _registerMenu {
         weight      => MENU_WEIGHT,
         id          => 'attrmix',
         node        => 'myMusic',
+        'icon-id'   => 'plugins/MusicSimilarity/html/images/mix_svg.png',
         actions => {
             go => {
                 player => 0,
@@ -161,7 +176,7 @@ sub _registerMenu {
             },
         },
         window         => {
-            'icon-id'  => 'plugins/MusicSimilarity/html/images/icon.png'
+            'icon-id'  => 'plugins/MusicSimilarity/html/images/mix_svg.png'
         },
     }]);
 }
@@ -614,12 +629,38 @@ sub _attrMixes {
     my $request  = shift;
     my $mixes    = _listAttrMixes();
     my $menu     = $request->getParam('menu');
+    my $material = $request->getParam('materialskin');
     my $menuMode = defined $menu;
     my $loopname = $menuMode ? 'item_loop' : 'mixes_loop';
     my $count    = 0;
 
     if ($menuMode) {
         $request->addResult('offset', 0);
+    }
+
+    if (defined $material) {
+        my $actionloop = 'materialskin_actions_loop';
+        $request->addResultLoop($actionloop, $count, 'title', $request->string('MUSICSIMILARITY_ADDMIX'));
+        $request->addResultLoop($actionloop, $count, 'id', 'msim-add');
+        $request->addResultLoop($actionloop, $count, 'svg', 'plugins/MusicSimilarity/html/images/add.svg');
+        $request->addResultLoop($actionloop, $count, 'type', 'toolbar');
+        $request->addResultLoop($actionloop, $count, 'script', "bus.\$emit('musicsimilarity.open');");
+
+        $count++;
+        $request->addResultLoop($actionloop, $count, 'title', $request->string('EDIT'));
+        $request->addResultLoop($actionloop, $count, 'id', 'msim-edit');
+        $request->addResultLoop($actionloop, $count, 'icon', 'edit');
+        $request->addResultLoop($actionloop, $count, 'type', 'item');
+        $request->addResultLoop($actionloop, $count, 'script', "bus.\$emit('musicsimilarity.open', '\$ITEMID');");
+
+        $count++;
+        $request->addResultLoop($actionloop, $count, 'title', $request->string('DELETE'));
+        $request->addResultLoop($actionloop, $count, 'id', 'msim-delete');
+        $request->addResultLoop($actionloop, $count, 'icon', 'delete_outline');
+        $request->addResultLoop($actionloop, $count, 'type', 'item');
+        $request->addResultLoop($actionloop, $count, 'script', "bus.\$emit('musicsimilarity-remove', '\$ITEMID', '\$TITLE');");
+
+        $count = 0;
     }
 
     for my $item (@$mixes) {
