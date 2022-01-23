@@ -731,10 +731,19 @@ sub _attrMix {
     if ($mix) {
         my $jsonData = _readAttrMixJson($mix, 0);
         if ($jsonData) {
+            # TODO: Refresh action
             _callApi($request, 'attrmix', $jsonData, 500, 0, undef);
             return;
         }
+    } else {
+        my $body = $request->getParam('body');
+        if ($body) {
+            # TODO: Refresh and save actions
+            _callApi($request, 'attrmix', $body, 500, 0, undef);
+            return;
+        }
     }
+
     $request->setStatusBadDispatch();
 }
 
@@ -765,6 +774,7 @@ sub _saveMix {
         }
         my $dir = $serverprefs->get('playlistdir');
         my $mixFile = File::Spec->catpath('', $dir, $mix . ATTRMIX_FILE_EXT); # First arg ignored???
+        my $isNew = ! -e $mixFile;
         main::DEBUGLOG && $log->debug("Saving $mixFile");
         if (open my $fh, ">", $mixFile) {
             my %hash = %{$body};
@@ -778,6 +788,10 @@ sub _saveMix {
                 }
             }
             close $fh;
+            if ($isNew) {
+                # Material will need to refresh its parent list...
+                $request->addResult('refreshparent', 1);
+            }
             $request->setStatusDone();
             return;
         }
@@ -1005,11 +1019,8 @@ main::DEBUGLOG && $log->debug("CMD:$cmd");
     }
 
     if ($cmd eq 'mix') {
-        my $attrMix = $request->getParam('mix');
-        if ($attrMix) {
-            _attrMix($request);
-            return;
-        }
+        _attrMix($request);
+        return;
     }
 
     # get our parameters
