@@ -42,7 +42,7 @@ use constant NUM_SIMILAR_TRACKS => 100;
 use constant ESSENTIA_LEVEL_CHECK_DELAY => 15;
 use constant ESSENTIA_LEVEL_ATTEMPTS => (5*60) / ESSENTIA_LEVEL_CHECK_DELAY;
 use constant MENU_WEIGHT => 95;
-use constant ATTRMIX_FILE_EXT => '.attrmix';
+use constant ATTRMIX_FILE_EXT => '.smartmix';
 use constant MSK_ACT_LOOP => 'materialskin_actions_loop';
 
 my $log = Slim::Utils::Log->addLogCategory({
