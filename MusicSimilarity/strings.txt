@@ -158,3 +158,9 @@ MUSICSIMILARITY_ATTRIB_WEIGHT
 
 MUSICSIMILARITY_ATTRIB_WEIGHT_DESC
 	EN	The similarity score between tracks can be calculated using only Musly (set weight to 0), only Essentia (set weight to 100), or a combination of both (with the weight here specifying the percentage of the score given to Essentia).
+
+MUSICSIMILARITY_ATTRMIX
+	EN	Smart Mix
+
+MUSICSIMILARITY_ADDMIX
+	EN	Add mix
