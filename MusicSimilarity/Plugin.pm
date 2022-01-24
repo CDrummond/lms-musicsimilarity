@@ -43,6 +43,7 @@ use constant ESSENTIA_LEVEL_CHECK_DELAY => 15;
 use constant ESSENTIA_LEVEL_ATTEMPTS => (5*60) / ESSENTIA_LEVEL_CHECK_DELAY;
 use constant MENU_WEIGHT => 95;
 use constant ATTRMIX_FILE_EXT => '.attrmix';
+use constant MSK_ACT_LOOP => 'materialskin_actions_loop';
 
 my $log = Slim::Utils::Log->addLogCategory({
     'category'     => 'plugin.musicsimilarity',
@@ -639,26 +640,25 @@ sub _attrMixes {
     }
 
     if (defined $material) {
-        my $actionloop = 'materialskin_actions_loop';
-        $request->addResultLoop($actionloop, $count, 'title', $request->string('MUSICSIMILARITY_ADDMIX'));
-        $request->addResultLoop($actionloop, $count, 'id', 'msim-add');
-        $request->addResultLoop($actionloop, $count, 'svg', 'plugins/MusicSimilarity/html/images/add.svg');
-        $request->addResultLoop($actionloop, $count, 'type', 'toolbar');
-        $request->addResultLoop($actionloop, $count, 'script', "bus.\$emit('musicsimilarity.open');");
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'title', $request->string('MUSICSIMILARITY_ADDMIX'));
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'id', 'msim-add');
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'svg', 'plugins/MusicSimilarity/html/images/add.svg');
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'type', 'toolbar');
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'script', "bus.\$emit('musicsimilarity.open');");
 
         $count++;
-        $request->addResultLoop($actionloop, $count, 'title', $request->string('EDIT'));
-        $request->addResultLoop($actionloop, $count, 'id', 'msim-edit');
-        $request->addResultLoop($actionloop, $count, 'icon', 'edit');
-        $request->addResultLoop($actionloop, $count, 'type', 'item');
-        $request->addResultLoop($actionloop, $count, 'script', "bus.\$emit('musicsimilarity.open', '\$ITEMID');");
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'title', $request->string('EDIT'));
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'id', 'msim-edit');
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'icon', 'edit');
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'type', 'item');
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'script', "bus.\$emit('musicsimilarity.open', '\$ITEMID');");
 
         $count++;
-        $request->addResultLoop($actionloop, $count, 'title', $request->string('DELETE'));
-        $request->addResultLoop($actionloop, $count, 'id', 'msim-delete');
-        $request->addResultLoop($actionloop, $count, 'icon', 'delete_outline');
-        $request->addResultLoop($actionloop, $count, 'type', 'item');
-        $request->addResultLoop($actionloop, $count, 'script', "bus.\$emit('musicsimilarity-remove', '\$ITEMID', '\$TITLE');");
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'title', $request->string('DELETE'));
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'id', 'msim-delete');
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'icon', 'delete_outline');
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'type', 'item');
+        $request->addResultLoop(MSK_ACT_LOOP, $count, 'script', "bus.\$emit('musicsimilarity-remove', '\$ITEMID', '\$TITLE');");
 
         $count = 0;
     }
@@ -728,18 +728,18 @@ sub _readAttrMixJson {
 sub _attrMix {
     my $request = shift;
     my $mix = $request->getParam('mix');
-    if ($mix) {
+    my $body = $request->getParam('body');
+
+    if ($body) {
+        if ($mix) {
+            _saveMix($request, $mix, $body);
+        }
+        _callApi($request, 'attrmix', $body, 500, 0, undef);
+        return;
+    } elsif ($mix) {
         my $jsonData = _readAttrMixJson($mix, 0);
         if ($jsonData) {
-            # TODO: Refresh action
             _callApi($request, 'attrmix', $jsonData, 500, 0, undef);
-            return;
-        }
-    } else {
-        my $body = $request->getParam('body');
-        if ($body) {
-            # TODO: Refresh and save actions
-            _callApi($request, 'attrmix', $body, 500, 0, undef);
             return;
         }
     }
@@ -763,40 +763,29 @@ sub _readMix {
 
 sub _saveMix {
     my $request = shift;
-    my $mix = $request->getParam('mix');
-    my $json = $request->getParam('body');
-    if ($mix && $json) {
-        my $body = eval { from_json($json) };
-        if ( $@ ) {
-            main::DEBUGLOG && $log->error("Failed to decode JSON");
-            $request->setStatusBadDispatch();
-            return
+    my $mix = shift;
+    my $body = shift;
+    my $dir = $serverprefs->get('playlistdir');
+    my $mixFile = File::Spec->catpath('', $dir, $mix . ATTRMIX_FILE_EXT); # First arg ignored???
+    my $isNew = ! -e $mixFile;
+    main::DEBUGLOG && $log->debug("Saving $mixFile");
+    if (open my $fh, ">", $mixFile) {
+        my %hash = %{$body};
+        foreach my $key (keys %hash) {
+            if ($key eq 'genre') {
+                my $v = join(";", @{%hash{$key}});
+                print $fh "$key=$v\n";
+            } else {
+                my $v=%hash{$key};
+                print $fh "$key=$v\n";
+            }
         }
-        my $dir = $serverprefs->get('playlistdir');
-        my $mixFile = File::Spec->catpath('', $dir, $mix . ATTRMIX_FILE_EXT); # First arg ignored???
-        my $isNew = ! -e $mixFile;
-        main::DEBUGLOG && $log->debug("Saving $mixFile");
-        if (open my $fh, ">", $mixFile) {
-            my %hash = %{$body};
-            foreach my $key (keys %hash) {
-                if ($key eq 'genre') {
-                    my $v = join(";", @{%hash{$key}});
-                    print $fh "$key=$v\n";
-                } else {
-                    my $v=%hash{$key};
-                    print $fh "$key=$v\n";
-                }
-            }
-            close $fh;
-            if ($isNew) {
-                # Material will need to refresh its parent list...
-                $request->addResult('refreshparent', 1);
-            }
-            $request->setStatusDone();
-            return;
+        close $fh;
+        if ($isNew) {
+            # Material will need to refresh its parent list...
+            $request->addResult('refreshparent', 1);
         }
     }
-    $request->setStatusBadDispatch();
 }
 
 sub _delMix {
@@ -1008,17 +997,12 @@ main::DEBUGLOG && $log->debug("CMD:$cmd");
         return;
     }
 
-    if ($cmd eq 'savemix') {
-        _saveMix($request);
-        return;
-    }
-
     if ($cmd eq 'delmix') {
         _delMix($request);
         return;
     }
 
-    if ($cmd eq 'mix') {
+    if ($cmd eq 'mix' && $request->getParam('attrmix')==1) {
         _attrMix($request);
         return;
     }
