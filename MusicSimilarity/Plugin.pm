@@ -129,6 +129,7 @@ sub initPlugin {
         my $rc = eval {
             require Plugins::MaterialSkin::Extensions;
             Plugins::MaterialSkin::Extensions::addJavascript("plugins/MusicSimilarity/html/js/musicsimilarity.js");
+            Plugins::MaterialSkin::Extensions::addTranslation("plugins/MusicSimilarity/html/lang/");
             Plugins::MaterialSkin::Extensions::addDialog("musicsimilarity");
             main::DEBUGLOG && $log->debug("Registered javascript/div with Material");
             1;

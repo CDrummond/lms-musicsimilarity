@@ -9,8 +9,8 @@ Vue.component('musicsimilarity', {
     <v-flex xs12 sm8><v-text-field v-model="name" hide-details single-line></v-text-field></v-flex>
    </v-layout>
    <div style="margin-bottom:16px; margin-top:24px">
-    <v-list-tile-title><b>Low-level attributes</b></v-list-tile-title>
-    <v-list-tile-sub-title>Adjust values for attributes you wish to filter on. Using 0 will cause attribute to not be filtered on.</v-list-tile-sub-title>
+    <v-list-tile-title><b>{{i18n('Low-level attributes')}}</b></v-list-tile-title>
+    <v-list-tile-sub-title>{{i18n('Adjust values for attributes you wish to filter on. Using 0 will cause attribute to not be filtered on.')}}</v-list-tile-sub-title>
    </div>
    <template v-for="(attr, index) in lowlevel">
     <v-layout wrap :disabled="running">
@@ -22,26 +22,26 @@ Vue.component('musicsimilarity', {
     </v-layout>
    </template>
    <v-layout wrap :disabled="running">
-    <v-flex xs12 sm4 style="margin-top:28px"><div>Genres</div></v-flex>
+    <v-flex xs12 sm4 style="margin-top:28px"><div>{{i18n('Genres')}}</div></v-flex> <!--skiptrans-->
     <v-flex xs12 sm8 style="padding-top:8px">
-     <v-select chips deletable-chips multiple :items="genres" :label="i18n('Selected Genres')" v-model="chosenGenres">
+     <v-select chips deletable-chips multiple :items="genres" :label="i18n('Selected Genres')" v-model="chosenGenres"> <!--skiptrans-->
       <v-list-tile slot="prepend-item" @click="toggleGenres()">
        <v-list-tile-action><v-icon>{{selectAllIcon}}</v-icon></v-list-tile-action>
-       <v-list-tile-title>{{i18n('Select All')}}</v-list-tile-title>
+       <v-list-tile-title>{{i18n('Select All')}}</v-list-tile-title> <!--skiptrans-->
       </v-list-tile>
       <v-divider slot="prepend-item"></v-divider>
       <template v-slot:selection="{ item, index }">
         <v-chip v-if="(index < 5) || chosenGenres.length==6" close @input="chosenGenres.splice(index, 1)">
          <span>{{ item }}</span>
         </v-chip>
-        <span v-if="index == 5 && chosenGenres.length>6" class="subtext">{{i18n("(+%1 others)", chosenGenres.length - 5) }}</span>
+        <span v-if="index == 5 && chosenGenres.length>6" class="subtext">{{i18n("(+%1 others)", chosenGenres.length - 5) }}</span> <!--skiptrans-->
       </template>
      </v-select>
     </v-flex>
    </v-layout>
    <div style="margin-bottom:16px; margin-top:24px">
-    <v-list-tile-title><b>High-level attributes</b></v-list-tile-title>
-    <v-list-tile-sub-title>Adjust values for attributes you wish to filter on. Using 0, or 50, will cause attribute to not be filtered on. Values higher than 50 imply a high probability that a track matches the attribute. Likewise less than 50 implies not having that attribute.</v-list-tile-sub-title>
+    <v-list-tile-title><b>{{i18n('High-level attributes')}}</b></v-list-tile-title>
+    <v-list-tile-sub-title>{{i18n('Adjust values for attributes you wish to filter on. Using 0, or 50, will cause attribute to not be filtered on. Values higher than 50 imply a high probability that a track matches the attribute. Likewise less than 50 implies not having that attribute.')}}</v-list-tile-sub-title>
    </div>
    <template v-for="(attr, index) in highlevel">
     <v-layout wrap :disabled="running">
@@ -51,10 +51,10 @@ Vue.component('musicsimilarity', {
    </template>
   </v-card-text>
   <v-card-actions>
-   <div v-if="running" style="padding-left:8px">Creating...</div>
+   <div v-if="running" style="padding-left:8px">{{i18n('Creating...')}}</div>
    <v-spacer></v-spacer>
    <v-btn :disabled="running" flat @click.native="save()">{{saveButtonText}}</v-btn>
-   <v-btn :disabled="running" flat @click.native="cancel()">Cancel</v-btn>
+   <v-btn :disabled="running" flat @click.native="cancel()">{{i18n('Cancel')}}</v-btn> <!--skiptrans-->
   </v-card-actions>
  </v-card>
 </v-dialog>
@@ -67,23 +67,8 @@ Vue.component('musicsimilarity', {
             running: false,
             title: undefined,
             name: undefined,
-            lowlevel: [
-                { key:'duration', label:'Duration (seconds)', min:0, max:600},
-                { key:'bpm', label:'BPM', min:0, max:200 },
-                { key:'loudness', label:'Loudness', min:0, max:100}
-            ],
-            highlevel: [
-                { key:'danceable', label:'Danceable', value:50 },
-                { key:'aggressive', label:'Aggressive', value:50 },
-                { key:'electronic', label:'Electronic', value:50 },
-                { key:'acoustic', label:'Acoustic', value:50 },
-                { key:'happy', label:'Happy', value:50 },
-                { key:'sad', label:'Sad', value:50 },
-                { key:'party', label:'Party', value:50 },
-                { key:'relaxed', label:'Relaxed', value:50 },
-                { key:'dark', label:'Dark', value:50 },
-                { key:'tonal', label:'Tonal', value:50 },
-                { key:'voice', label:'Voice', value:50 } ],
+            lowlevel: [],
+            highlevel: [],
             genres: [],
             chosenGenres: []
         }
@@ -91,6 +76,23 @@ Vue.component('musicsimilarity', {
     mounted() {
         bus.$on('musicsimilarity.open', function(id) {
             this.running = false;
+            this.lowlevel = [
+                { key:'duration', label:i18n('Duration (seconds)'), min:0, max:600},
+                { key:'bpm',      label:i18n('BPM'), min:0, max:200 },
+                { key:'loudness', label:i18n('Loudness'), min:0, max:100}
+            ];
+            this.highlevel = [
+                { key:'danceable',  label:i18n('Danceable'), value:50 },
+                { key:'aggressive', label:i18n('Aggressive'), value:50 },
+                { key:'electronic', label:i18n('Electronic'), value:50 },
+                { key:'acoustic',   label:i18n('Acoustic'), value:50 },
+                { key:'happy',      label:i18n('Happy'), value:50 },
+                { key:'sad',        label:i18n('Sad'), value:50 },
+                { key:'party',      label:i18n('Party'), value:50 },
+                { key:'relaxed',    label:i18n('Relaxed'), value:50 },
+                { key:'dark',       label:i18n('Dark'), value:50 },
+                { key:'tonal',      label:i18n('Tonal'), value:50 },
+                { key:'voice',      label:i18n('Voice'), value:50 } ];
             lmsList("", ["genres"], undefined, 0, 1000).then(({data}) => {
                 this.genres = [];
                 if (data && data.result && data.result.genres_loop) {
@@ -99,11 +101,11 @@ Vue.component('musicsimilarity', {
                     }
                 }
                 if (undefined==id) {
-                    this.title='Add new Smart Mix';
+                    this.title=i18n('Add new Smart Mix');
                     this.name = undefined;
                     this.show = true;
                 } else {
-                    this.title='Edit Smart Mix';
+                    this.title=i18n('Edit Smart Mix');
                     this.name = id;
                     this.chosenGenres = [];
                     lmsCommand("", ["musicsimilarity", "readmix", "mix:"+id]).then(({data}) => {
@@ -203,7 +205,7 @@ Vue.component('musicsimilarity', {
     },
     computed: {
         saveButtonText() {
-            return undefined==this.id || this.id.trim().length<1 ? 'Create Mix' : 'Save';
+            return undefined==this.id || this.id.trim().length<1 ? i18n('Create Mix') : i18n('Save');
         },
         selectAllIcon () {
             if (this.chosenGenres.length==this.genres.length) {
@@ -223,7 +225,7 @@ Vue.component('musicsimilarity', {
 })
 
 bus.$on('musicsimilarity-remove', function(id, name) {
-    confirm(i18n("Delete '%1'?", name), i18n('Delete')).then(res => {
+    confirm(i18n("Delete '%1'?", name), i18n('Delete')).then(res => { //skiptrans
         if (res) {
             lmsCommand("", ["musicsimilarity", "delmix", "mix:"+id]).then(({data}) => {
                 logJsonMessage("RESP", data);
