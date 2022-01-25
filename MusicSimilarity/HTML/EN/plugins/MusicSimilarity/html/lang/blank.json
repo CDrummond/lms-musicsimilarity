@@ -2,7 +2,6 @@
 "Acoustic":"",
 "Add new Smart Mix":"",
 "Adjust values for attributes you wish to filter on. Using 0 will cause attribute to not be filtered on.":"",
-"Adjust values for attributes you wish to filter on. Using 0, or 50, will cause attribute to not be filtered on. Values higher than 50 imply a high probability that a track matches the attribute. Likewise less than 50 implies not having that attribute.":"",
 "Aggressive":"",
 "BPM":"",
 "Create Mix":"",
@@ -14,12 +13,12 @@
 "Electronic":"",
 "Happy":"",
 "High-level attributes":"",
-"Loudness":"",
 "Low-level attributes":"",
 "Party":"",
 "Relaxed":"",
 "Sad":"",
 "Save":"",
+"Select which attributes you would like to filter on. [+] indicates tracks should have a high probability for the attribute. [-] indicates tracks should have a high probability that they do not have the attribute.":"",
 "Tonal":"",
 "Voice":""
 }
