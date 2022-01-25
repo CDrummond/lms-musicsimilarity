@@ -15,9 +15,23 @@ checking audio characteristics (BPM, Key, etc.) against those of the seed track.
 
 3 entries are added to LMS' 'More'/context menus:
 
-1. `Similar tracks` returns (up to) 100 tracks that are similar to the selected track, returned in similarity order.
+1. `Similar tracks` returns (up to) 100 tracks that are similar to the selectedtrack, returned in similarity order.
 2. `Similar tracks by artist` returns (up to) 100 byt the same artist that are similar to the selected track, returned in similarity order.
 3. `Create similarity mix` creates a mix of (up to) 50 tracks based upon the selected artist, album, or track, returned in a shuffled order.
 
 *NOTE* These menus do not currently work with the `Default` LMS web skin, but do
 work with `Material Skin` and other controllers.
+
+## Smart Mixes
+
+If you have analysed your files with Essentia high-level, then there will be a
+'Smart Mixes' entry under 'My Music'. This will allow you to create mixes based
+upon Essentia attributes - e.g. 'Danceable', 'Not Aggressive', etc.
+
+It is only possible to create new mixes using 'Material Skin' - as this plugin
+integrates with that and provides a dialog for creating these mixes. Any existing
+mixes should appear with other controllers.
+
+When LMS starts, this plugin will query the 'Music Similarity' server to check
+whether Essenta high-level was used - and only if so is this 'Smart Mixes' entry
+added to 'My Music'
