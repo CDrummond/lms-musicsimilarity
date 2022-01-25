@@ -65,10 +65,6 @@
                 <input type="text" class="stdedit sliderInput_10_150_10" name="pref_max_bpm_diff" id="max_bpm_diff" value="[% prefs.pref_max_bpm_diff %]" size="5">
             [% END %]
 
-	        [% WRAPPER settingGroup title="MUSICSIMILARITY_MAX_LOUDNESS_DIFF" desc="MUSICSIMILARITY_MAX_LOUDNESS_DIFF_DESC" %]
-                <input type="text" class="stdedit sliderInput_1_10_1" name="pref_max_loudness_diff" id="max_loudness_diff" value="[% prefs.pref_max_loudness_diff %]" size="5">
-            [% END %]
-
             [% WRAPPER settingGroup title="MUSICSIMILARITY_FILTER_KEY" desc="MUSICSIMILARITY_FILTER_KEY_DESC" %]
                 <select class="stdedit" name="pref_filter_key" id="filter_key">
                     <option [% IF NOT prefs.filter_key %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
