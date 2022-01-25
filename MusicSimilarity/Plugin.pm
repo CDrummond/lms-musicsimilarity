@@ -44,6 +44,7 @@ use constant ESSENTIA_LEVEL_ATTEMPTS => (5*60) / ESSENTIA_LEVEL_CHECK_DELAY;
 use constant MENU_WEIGHT => 95;
 use constant ATTRMIX_FILE_EXT => '.smartmix';
 use constant MSK_ACT_LOOP => 'materialskin_actions_loop';
+use constant ESSENTIA_ATTRIB_LEVEL => 30;
 
 my $log = Slim::Utils::Log->addLogCategory({
     'category'     => 'plugin.musicsimilarity',
@@ -689,9 +690,9 @@ sub _attrMixes {
     $request->setStatusDone();
 }
 
-sub _readAttrMixJson {
+sub _readAttrMixFile {
     my $mix = shift;
-    my $fileOnly = shift;
+    my $convertForApi = shift;
     my $dir = $serverprefs->get('playlistdir');
     my $mixFile = File::Spec->catpath('', $dir, $mix . ATTRMIX_FILE_EXT); # First arg ignored???
     if (! -e $mixFile) {
@@ -702,7 +703,7 @@ sub _readAttrMixJson {
     if (open my $fh, "<", $mixFile) {
         main::DEBUGLOG && $log->debug("Reading $mixFile");
         my $mediaDirs = $serverprefs->get('mediadirs');
-        my %req = $fileOnly ? () : ( 'format' => 'text', 'mpath'  => @$mediaDirs[0] );
+        my %req = $convertForApi ? ( 'format' => 'text', 'mpath'  => @$mediaDirs[0] ) : ();
         my $ok = 0;
         while (my $line = <$fh>) {
             if (rindex($line, '#', 0)==-1) {
@@ -738,7 +739,7 @@ sub _attrMix {
         _callApi($request, 'attrmix', $body, 500, 0, undef);
         return;
     } elsif ($mix) {
-        my $jsonData = _readAttrMixJson($mix, 0);
+        my $jsonData = _readAttrMixFile($mix, 1);
         if ($jsonData) {
             _callApi($request, 'attrmix', $jsonData, 500, 0, undef);
             return;
@@ -752,7 +753,7 @@ sub _readMix {
     my $request = shift;
     my $mix = $request->getParam('mix');
     if ($mix) {
-        my $jsonData = _readAttrMixJson($mix, 1);
+        my $jsonData = _readAttrMixFile($mix, 0);
         if ($jsonData) {
             $request->addResult('body', $jsonData);
             $request->setStatusDone();
@@ -771,9 +772,12 @@ sub _saveMix {
     my $isNew = ! -e $mixFile;
     main::DEBUGLOG && $log->debug("Saving $mixFile");
     if (open my $fh, ">", $mixFile) {
-        my %hash = %{$body};
+        my $json = eval { from_json($body); };
+        my %hash = %{$json};
         foreach my $key (keys %hash) {
-            if ($key eq 'genre') {
+            if ($key eq 'format' || $key eq 'mpath') {
+                ; # Skip!
+            } elsif ($key eq 'genre') {
                 my $v = join(";", @{%hash{$key}});
                 print $fh "$key=$v\n";
             } else {

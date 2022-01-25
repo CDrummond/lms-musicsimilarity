@@ -41,20 +41,19 @@ Vue.component('musicsimilarity', {
    </v-layout>
    <div style="margin-bottom:16px; margin-top:24px">
     <v-list-tile-title><b>{{i18n('High-level attributes')}}</b></v-list-tile-title>
-    <v-list-tile-sub-title>{{i18n('Adjust values for attributes you wish to filter on. Using 0, or 50, will cause attribute to not be filtered on. Values higher than 50 imply a high probability that a track matches the attribute. Likewise less than 50 implies not having that attribute.')}}</v-list-tile-sub-title>
+    <v-list-tile-sub-title>{{i18n('Select which attributes you would like to filter on. [+] indicates tracks should have a high probability for the attribute. [-] indicates tracks should have a high probability that they do not have the attribute.')}}</v-list-tile-sub-title>
    </div>
-   <template v-for="(attr, index) in highlevel">
-    <v-layout wrap :disabled="running">
-     <v-flex xs12 sm4 style="margin-top:18px"><div>{{attr.label}}</div></v-flex>
-     <v-flex xs12 sm8 style="padding-top:18px"><v-slider min="0" max="100" thumb-label="always" v-model="attr.value"></v-slider></v-flex>
-    </v-layout>
-   </template>
+   <v-layout wrap :disabled="running">
+    <template v-for="(attr, index) in highlevel">
+     <v-flex xs12 sm6 @click="toggle(attr)" style="margin-top:12px; cursor:pointer;"><v-icon style="margin-right:8px; margin-top:-3px">{{0==attr.val ? 'indeterminate_check_box' : 1==attr.val ? 'add_box' : 'check_box_outline_blank'}}</v-icon>{{attr.label}}</v-flex>
+    </template>
+   </v-layout>
   </v-card-text>
   <v-card-actions>
    <div v-if="running" style="padding-left:8px">{{i18n('Creating...')}}</div>
    <v-spacer></v-spacer>
-   <v-btn :disabled="running" flat @click.native="save()">{{saveButtonText}}</v-btn>
    <v-btn :disabled="running" flat @click.native="cancel()">{{i18n('Cancel')}}</v-btn> <!--skiptrans-->
+   <v-btn :disabled="running" flat @click.native="save()">{{saveButtonText}}</v-btn>
   </v-card-actions>
  </v-card>
 </v-dialog>
@@ -70,7 +69,8 @@ Vue.component('musicsimilarity', {
             lowlevel: [],
             highlevel: [],
             genres: [],
-            chosenGenres: []
+            chosenGenres: [],
+            values: []
         }
     },
     mounted() {
@@ -78,21 +78,20 @@ Vue.component('musicsimilarity', {
             this.running = false;
             this.lowlevel = [
                 { key:'duration', label:i18n('Duration (seconds)'), min:0, max:600},
-                { key:'bpm',      label:i18n('BPM'), min:0, max:200 },
-                { key:'loudness', label:i18n('Loudness'), min:0, max:100}
+                { key:'bpm',      label:i18n('BPM'), min:0, max:200 }
             ];
             this.highlevel = [
-                { key:'danceable',  label:i18n('Danceable'), value:50 },
-                { key:'aggressive', label:i18n('Aggressive'), value:50 },
-                { key:'electronic', label:i18n('Electronic'), value:50 },
-                { key:'acoustic',   label:i18n('Acoustic'), value:50 },
-                { key:'happy',      label:i18n('Happy'), value:50 },
-                { key:'sad',        label:i18n('Sad'), value:50 },
-                { key:'party',      label:i18n('Party'), value:50 },
-                { key:'relaxed',    label:i18n('Relaxed'), value:50 },
-                { key:'dark',       label:i18n('Dark'), value:50 },
-                { key:'tonal',      label:i18n('Tonal'), value:50 },
-                { key:'voice',      label:i18n('Voice'), value:50 } ];
+                { key:'danceable',  label:i18n('Danceable'), val:-1 },
+                { key:'aggressive', label:i18n('Aggressive'), val:-1 },
+                { key:'electronic', label:i18n('Electronic'), val:-1 },
+                { key:'acoustic',   label:i18n('Acoustic'), val:-1 },
+                { key:'happy',      label:i18n('Happy'), val:-1 },
+                { key:'sad',        label:i18n('Sad'), val:-1 },
+                { key:'party',      label:i18n('Party'), val:-1 },
+                { key:'relaxed',    label:i18n('Relaxed'), val:-1 },
+                { key:'dark',       label:i18n('Dark'), val:-1 },
+                { key:'tonal',      label:i18n('Tonal'), val:-1 },
+                { key:'voice',      label:i18n('Voice'), val:-1 } ];
             lmsList("", ["genres"], undefined, 0, 1000).then(({data}) => {
                 this.genres = [];
                 if (data && data.result && data.result.genres_loop) {
@@ -132,7 +131,7 @@ Vue.component('musicsimilarity', {
             if (undefined==json) {
                 return;
             }
-            var name = undefined==this.id ? undefined : this.id.trim();
+            var name = undefined==this.name ? undefined : this.name.trim();
             var createMix = undefined==name || name.length<1;
             var command = createMix ? ['musicsimilarity', 'mix', 'body:'+json, 'menu:1', 'attrmix:1']
                                     : ['musicsimilarity', 'mix', 'mix:'+name, 'body:'+json, 'menu:1', 'attrmix:1'];
@@ -140,7 +139,7 @@ Vue.component('musicsimilarity', {
             this.running = true;
             lmsCommand("", command).then(({data}) => {
                 var resp = parseBrowseResp(data, {id:'smartmix'}, {isSearch:true});
-                bus.$emit('pluginListResponse', {title: createMix ? 'Smart Mix' :( 'Smart Mix: ' + name), id:'smartmix'}, {command:command, params:[]}, resp);
+                bus.$emit('pluginListResponse', {title: createMix ? 'Smart Mix' : ('Smart Mix: ' + name), id:'smartmix'}, {command:command, params:[]}, resp);
                 this.show = false;
             }).catch(err => {
                 this.running = false;
@@ -161,8 +160,8 @@ Vue.component('musicsimilarity', {
                 }
             }
             for (var i=0, loop=this.highlevel, len=loop.length; i<len; ++i) {
-                if (loop[i].value>0 && loop[i].value!=50) {
-                    data[loop[i].key]=loop[i].value;
+                if (-1!=loop[i].val) {
+                    data[loop[i].key]=loop[i].val ? 'y' : 'n';
                     valid = true;
                 }
             }
@@ -178,7 +177,7 @@ Vue.component('musicsimilarity', {
                 loop[i].max = undefined!=data['max'+loop[i].key] ? parseInt(data['max'+loop[i].key]) : 0;
             }
             for (var i=0, loop=this.highlevel, len=loop.length; i<len; ++i) {
-                loop[i].value = undefined!=data[loop[i].key] ? parseInt(data[loop[i].key]) : 50;
+                loop[i].val = undefined==data[loop[i].key] ? -1 : 'y'==data[loop[i].key] ? 1 : 0;
             }
             if (undefined!=data.genre) {
                 for (var i=0, len=data.genre.length; i<len; ++i) {
@@ -195,6 +194,15 @@ Vue.component('musicsimilarity', {
                 this.chosenGenres = this.genres.slice();
             }
         },
+        toggle(attr) {
+            if (-1==attr.val) {
+                attr.val=1;
+            } else if (1==attr.val) {
+                attr.val=0;
+            } else {
+                attr.val=-1;
+            }
+        },
         i18n(str, val) {
             if (this.show) {
                 return i18n(str, val);
@@ -205,7 +213,7 @@ Vue.component('musicsimilarity', {
     },
     computed: {
         saveButtonText() {
-            return undefined==this.id || this.id.trim().length<1 ? i18n('Create Mix') : i18n('Save');
+            return undefined==this.name || this.name.trim().length<1 ? i18n('Create Mix') : i18n('Save');
         },
         selectAllIcon () {
             if (this.chosenGenres.length==this.genres.length) {
