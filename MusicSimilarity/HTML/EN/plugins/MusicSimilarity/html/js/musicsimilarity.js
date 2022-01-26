@@ -103,6 +103,10 @@ Vue.component('musicsimilarity', {
                     this.title=i18n('Add new Smart Mix');
                     this.name = undefined;
                     this.show = true;
+                    let json = getLocalStorageVal('musicsimilarity', undefined);
+                    if (json!=undefined) {
+                        this.setFields(JSON.parse(json));
+                    }
                 } else {
                     this.title=i18n('Edit Smart Mix');
                     this.name = id;
@@ -141,6 +145,7 @@ Vue.component('musicsimilarity', {
                 var resp = parseBrowseResp(data, {id:'smartmix'}, {isSearch:true});
                 bus.$emit('pluginListResponse', {title: createMix ? 'Smart Mix' : ('Smart Mix: ' + name), id:'smartmix'}, {command:command, params:[]}, resp);
                 this.show = false;
+                setLocalStorageVal('musicsimilarity', json);
             }).catch(err => {
                 this.running = false;
                 logError(err);
