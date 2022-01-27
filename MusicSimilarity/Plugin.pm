@@ -256,7 +256,6 @@ sub _dstmMix {
     my ($client, $cb, $filterGenres) = @_;
     main::DEBUGLOG && $log->debug("Get similar tracks");
     my $seedTracks = _getMixableProperties($client, NUM_SEED_TRACKS); # Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client, NUM_SEED_TRACKS);
-    my $tracks = [];
 
     # don't seed from radio stations - only do if we're playing from some track based source
     # Get list of valid seeds...
@@ -736,7 +735,14 @@ sub _attrMix {
         if ($mix) {
             _saveMix($request, $mix, $body);
         }
-        _callApi($request, 'attrmix', $body, 500, 0, undef);
+
+        # Add format and mpath
+        my $mediaDirs = $serverprefs->get('mediadirs');
+        my $json = eval { from_json($body); };
+        $json->{'format'}='text';
+        $json->{'mpath'}=@$mediaDirs[0];
+
+        _callApi($request, 'attrmix', to_json($json), 500, 0, undef);
         return;
     } elsif ($mix) {
         my $jsonData = _readAttrMixFile($mix, 1);

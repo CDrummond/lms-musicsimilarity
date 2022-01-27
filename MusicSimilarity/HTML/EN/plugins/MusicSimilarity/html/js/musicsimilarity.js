@@ -143,7 +143,7 @@ Vue.component('musicsimilarity', {
             this.running = true;
             lmsCommand("", command).then(({data}) => {
                 var resp = parseBrowseResp(data, {id:'smartmix'}, {isSearch:true});
-                bus.$emit('pluginListResponse', {title: createMix ? 'Smart Mix' : ('Smart Mix: ' + name), id:'smartmix'}, {command:command, params:[]}, resp);
+                bus.$emit('pluginListResponse', {title: createMix ? 'Smart Mix' : name, id:'smartmix'}, {command:command, params:[]}, resp);
                 this.show = false;
                 setLocalStorageVal('musicsimilarity', json);
             }).catch(err => {
@@ -153,7 +153,7 @@ Vue.component('musicsimilarity', {
         },
         build() {
             var valid = false;
-            var data = {format:'text'};
+            var data = {};
             for (var i=0, loop=this.lowlevel, len=loop.length; i<len; ++i) {
                 if (loop[i].min>0) {
                     data['min'+loop[i].key]=loop[i].min;
