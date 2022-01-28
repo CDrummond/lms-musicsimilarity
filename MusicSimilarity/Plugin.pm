@@ -784,10 +784,10 @@ sub _saveMix {
             if ($key eq 'format' || $key eq 'mpath') {
                 ; # Skip!
             } elsif ($key eq 'genre') {
-                my $v = join(";", @{%hash{$key}});
+                my $v = join(";", @{$hash{$key}});
                 print $fh "$key=$v\n";
             } else {
-                my $v=%hash{$key};
+                my $v=$hash{$key};
                 print $fh "$key=$v\n";
             }
         }
