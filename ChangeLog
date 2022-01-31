@@ -2,6 +2,7 @@
 -----
 1. When getting 5 seed tracks select 5 random tracks from last 10 of queue.
 2. Query music-similarity at start-up for Essentia support level.
+3. No need to call fileURLFromPath on file:// URLs.
 
 0.0.3
 -----

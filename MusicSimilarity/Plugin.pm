@@ -303,7 +303,9 @@ sub _dstmMix {
                             $songs[$j] = Win32::GetANSIPathName($songs[$j]);
                         }
 
-                        if ( -e $songs[$j] || -e Slim::Utils::Unicode::utf8encode_locale($songs[$j]) || index($songs[$j], 'file:///')==0) {
+                        if (index($songs[$j], 'file:///')==0) {
+                            push @$tracks, $songs[$j];
+                        } elsif ( -e $songs[$j] || -e Slim::Utils::Unicode::utf8encode_locale($songs[$j])) {
                             push @$tracks, Slim::Utils::Misc::fileURLFromPath($songs[$j]);
                         } else {
                             $log->error('API attempted to mix in a song at ' . $songs[$j] . ' that can\'t be found at that location');
@@ -870,8 +872,9 @@ sub _callApi {
                     $track = Win32::GetANSIPathName($track);
                 }
 
-                if ( -e $track || -e Slim::Utils::Unicode::utf8encode_locale($track) || index($track, 'file:///')==0) {
-                    my $trackObj = Slim::Schema->objectForUrl(Slim::Utils::Misc::fileURLFromPath($track));
+                my $isFileUrl = index($track, 'file:///')==0;
+                if ($isFileUrl || -e $track || -e Slim::Utils::Unicode::utf8encode_locale($track)) {
+                    my $trackObj = Slim::Schema->objectForUrl($isFileUrl ? $track : Slim::Utils::Misc::fileURLFromPath($track));
                     if (blessed $trackObj && (!$isMix || ($trackObj->id != $seedToAdd->id))) {
                         push @usableTracks, $trackObj;
                         main::DEBUGLOG && $log->debug("..." . $track);
