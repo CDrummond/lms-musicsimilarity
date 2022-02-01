@@ -304,8 +304,12 @@ sub _dstmMix {
                         }
 
                         if (index($songs[$j], 'file:///')==0) {
-                            # Decode file:// URL and re-encode so that match LMS's encoding
-                            push @$tracks, Slim::Utils::Misc::fileURLFromPath(Slim::Utils::Misc::pathFromFileURL($songs[$j]));
+                            if (index($songs[$j], '#')>0) { # Cue tracks
+                                push @$tracks, $songs[$j];
+                            } else {
+                                # Decode file:// URL and re-encode so that match LMS's encoding
+                                push @$tracks, Slim::Utils::Misc::fileURLFromPath(Slim::Utils::Misc::pathFromFileURL($songs[$j]));
+                            }
                         } elsif ( -e $songs[$j] || -e Slim::Utils::Unicode::utf8encode_locale($songs[$j])) {
                             push @$tracks, Slim::Utils::Misc::fileURLFromPath($songs[$j]);
                         } else {
@@ -874,9 +878,14 @@ sub _callApi {
                 }
 
                 my $isFileUrl = index($track, 'file:///')==0;
+                my $isCueUrl = $isFileUrl && index($track, '#')>0;
                 if ($isFileUrl || -e $track || -e Slim::Utils::Unicode::utf8encode_locale($track)) {
                     # Decode file:// URL and re-encode so that match LMS's encoding
-                    my $trackObj = Slim::Schema->objectForUrl(Slim::Utils::Misc::fileURLFromPath($isFileUrl ? Slim::Utils::Misc::pathFromFileURL($track) : $track));
+                    my $trackObj = Slim::Schema->objectForUrl($isCueUrl
+                                                                ? $track
+                                                                : Slim::Utils::Misc::fileURLFromPath($isFileUrl
+                                                                                            ? Slim::Utils::Misc::pathFromFileURL($track)
+                                                                                            : $track));
                     if (blessed $trackObj && (!$isMix || ($trackObj->id != $seedToAdd->id))) {
                         push @usableTracks, $trackObj;
                         main::DEBUGLOG && $log->debug("..." . $track);
