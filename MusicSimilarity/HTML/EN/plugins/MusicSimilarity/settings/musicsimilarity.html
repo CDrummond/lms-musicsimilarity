@@ -79,10 +79,6 @@
                         <option [% IF prefs.filter_attrib %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
                     </select>
                 [% END %]
-
-                [% WRAPPER settingGroup title="MUSICSIMILARITY_ATTRIB_WEIGHT" desc="MUSICSIMILARITY_ATTRIB_WEIGHT_DESC" %]
-                    <input type="text" class="stdedit sliderInput_0_100_1" name="pref_attrib_weight" id="attrib_weight" value="[% prefs.pref_attrib_weight %]" size="5">
-                [% END %]
             [% END %]
         [% END %]
 

@@ -82,7 +82,6 @@ sub initPlugin {
         max_loudness_diff            => 5,
         filter_key                   => 1,
         filter_attrib                => 1,
-        attrib_weight                => 35,
         essentia_level               => -1
     });
 
@@ -434,7 +433,6 @@ sub _getMixData {
                         maxloudnessdiff => $prefs->get('max_loudness_diff'),
                         filterkey       => $prefs->get('filter_key'),
                         filterattrib    => $prefs->get('filter_attrib'),
-                        attribweight    => $prefs->get('attrib_weight'),
                         mpath           => @$mediaDirs[0]
                     });
 
@@ -462,7 +460,6 @@ sub _getSimilarData {
                         maxloudnessdiff => $prefs->get('max_loudness_diff'),
                         filterkey       => $prefs->get('filter_key'),
                         filterattrib    => $prefs->get('filter_attrib'),
-                        attribweight    => $prefs->get('attrib_weight'),
                         mpath           => @$mediaDirs[0]
                     });
     $http->timeout($prefs->get('timeout') || 30);
