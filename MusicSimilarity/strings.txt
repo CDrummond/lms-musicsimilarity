@@ -133,7 +133,7 @@ MUSICSIMILARITY_MAX_BPM_DIFF
 	EN	Max BPM difference
 
 MUSICSIMILARITY_MAX_BPM_DIFF_DESC
-	EN	Maximum difference in BPM between tracks. Setting this to 0, or 150, effectively disables this.
+	EN	Maximum difference in BPM between tracks. Setting this to 150 effectively disables this.
 
 MUSICSIMILARITY_FILTER_KEY
 	EN	Filter on key
