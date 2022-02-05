@@ -82,6 +82,12 @@
             [% END %]
         [% END %]
 
+        [% IF prefs.essentia_level == 0 && prefs.bliss_supported >=1 %]
+            [% WRAPPER settingGroup title="MUSICSIMILARITY_MAX_BPM_DIFF" desc="MUSICSIMILARITY_MAX_BPM_DIFF_DESC" %]
+                <input type="text" class="stdedit sliderInput_10_150_10" name="pref_max_bpm_diff" id="max_bpm_diff" value="[% prefs.pref_max_bpm_diff %]" size="5">
+            [% END %]
+        [% END %]
+
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
 
         [% WRAPPER settingGroup title="MUSICSIMILARITY_API_HOST" desc="MUSICSIMILARITY_API_HOST_DESC" %]

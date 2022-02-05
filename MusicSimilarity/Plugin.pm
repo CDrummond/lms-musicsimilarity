@@ -32,15 +32,15 @@ use Plugins::MusicSimilarity::Settings;
 
 
 my $initialized = 0;
-my $essentiaLevelQueries = 0;
+my $msimFeaturesQueries = 0;
 use constant DEF_NUM_DSTM_TRACKS => 5;
 use constant NUM_SEED_TRACKS => 5;
 use constant MAX_PREVIOUS_TRACKS => 200;
 use constant DEF_MAX_PREVIOUS_TRACKS => 100;
 use constant NUM_MIX_TRACKS => 50;
 use constant NUM_SIMILAR_TRACKS => 100;
-use constant ESSENTIA_LEVEL_CHECK_DELAY => 15;
-use constant ESSENTIA_LEVEL_ATTEMPTS => (5*60) / ESSENTIA_LEVEL_CHECK_DELAY;
+use constant FEATURES_CHECK_DELAY => 15;
+use constant FEATURES_CHECK_ATTEMPTS => (5*60) / FEATURES_CHECK_DELAY;
 use constant MENU_WEIGHT => 95;
 use constant ATTRMIX_FILE_EXT => '.smartmix';
 use constant MSK_ACT_LOOP => 'materialskin_actions_loop';
@@ -82,7 +82,8 @@ sub initPlugin {
         max_loudness_diff            => 5,
         filter_key                   => 1,
         filter_attrib                => 1,
-        essentia_level               => -1
+        essentia_level               => -1,
+        bliss_supported              => 0
     });
 
     if ( main::WEBUI ) {
@@ -123,7 +124,7 @@ sub initPlugin {
     ) );
     #...
 
-    _queryEssentiaStatus();
+    _queryFeatures();
 
     if ( Slim::Utils::PluginManager->isEnabled('Plugins::MaterialSkin::Plugin') ) {
         my $rc = eval {
@@ -183,27 +184,31 @@ sub _registerMenu {
     }]);
 }
 
-sub _queryEssentiaStatus {
-    Slim::Utils::Timers::killTimers(undef, \&_queryEssentiaStatus);
+sub _queryFeatures {
+    Slim::Utils::Timers::killTimers(undef, \&_queryFeatures);
     my $host = $prefs->get('host') || 'localhost';
     my $port = $prefs->get('port') || 11000;
-    my $url = "http://$host:$port/api/essentia";
-    $essentiaLevelQueries += 1;
+    my $url = "http://$host:$port/api/features";
+    $msimFeaturesQueries += 1;
     Slim::Networking::SimpleAsyncHTTP->new(
         sub {
             my $response = shift;
-            my $level = int($response->content);
-            $prefs->set('essentia_level', $level);
-            main::DEBUGLOG && $log->debug("Essentia level: " . $level);
-            if ($level > 1) {
+            my $features = $response->content;
+            my $essentia_level = index($features, "E")>=0 ? 2 : index($features, "e")>=0 ? 1 : 0;
+            my $bliss_supported = index($features, "b")>=0 ? 1 : 0;
+            $prefs->set('essentia_level', $essentia_level);
+            $prefs->set('bliss_supported', $bliss_supported);
+            main::DEBUGLOG && $log->debug("Essentia level: " . $essentia_level);
+            main::DEBUGLOG && $log->debug("Bliss supported: " . $bliss_supported);
+            if ($essentia_level > 1) {
                 _registerMenu();
             }
         },
         sub {
-            if ($essentiaLevelQueries<=ESSENTIA_LEVEL_ATTEMPTS) {
-                main::DEBUGLOG && $log->debug("Failed to determine Essentia level, will try again afer " . ESSENTIA_LEVEL_CHECK_DELAY . " seconds");
-                Slim::Utils::Timers::killTimers(undef, \&_queryEssentiaStatus);
-                Slim::Utils::Timers::setTimer(undef, time() + ESSENTIA_LEVEL_CHECK_DELAY, \&_queryEssentiaStatus);
+            if ($msimFeaturesQueries<=FEATURES_CHECK_ATTEMPTS) {
+                main::DEBUGLOG && $log->debug("Failed to determine fetures, will try again afer " . FEATURES_CHECK_DELAY . " seconds");
+                Slim::Utils::Timers::killTimers(undef, \&_queryFeatures);
+                Slim::Utils::Timers::setTimer(undef, time() + FEATURES_CHECK_DELAY, \&_queryFeatures);
             }
         }
     )->get($url);
