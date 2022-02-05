@@ -59,6 +59,17 @@ sub shutdownPlugin {
     $initialized = 0;
 }
 
+my $essentiaLevel = -1;
+my $blissSupported = 0;
+
+sub getEssentiaLevel() {
+    return $essentiaLevel;
+}
+
+sub getBlissSupported() {
+    return $blissSupported;
+}
+
 sub initPlugin {
     my $class = shift;
 
@@ -78,12 +89,9 @@ sub initPlugin {
         timeout                      => 30,
         no_genre_match_adjustment    => 15,
         genre_group_match_adjustment => 7,
-        max_bpm_diff                 => 50,
-        max_loudness_diff            => 5,
+        max_bpm_diff                 => 150,
         filter_key                   => 1,
-        filter_attrib                => 1,
-        essentia_level               => -1,
-        bliss_supported              => 0
+        filter_attrib                => 1
     });
 
     if ( main::WEBUI ) {
@@ -194,13 +202,11 @@ sub _queryFeatures {
         sub {
             my $response = shift;
             my $features = $response->content;
-            my $essentia_level = index($features, "E")>=0 ? 2 : index($features, "e")>=0 ? 1 : 0;
-            my $bliss_supported = index($features, "b")>=0 ? 1 : 0;
-            $prefs->set('essentia_level', $essentia_level);
-            $prefs->set('bliss_supported', $bliss_supported);
-            main::DEBUGLOG && $log->debug("Essentia level: " . $essentia_level);
-            main::DEBUGLOG && $log->debug("Bliss supported: " . $bliss_supported);
-            if ($essentia_level > 1) {
+            $essentiaLevel = index($features, "E")>=0 ? 2 : index($features, "e")>=0 ? 1 : 0;
+            $blissSupported = index($features, "b")>=0 ? 1 : 0;
+            main::DEBUGLOG && $log->debug("Essentia level: " . $essentiaLevel);
+            main::DEBUGLOG && $log->debug("Bliss supported: " . $blissSupported);
+            if ($essentiaLevel > 1) {
                 _registerMenu();
             }
         },
@@ -435,7 +441,6 @@ sub _getMixData {
                         nogenrematchadj => $prefs->get('no_genre_match_adjustment'),
                         genregroupadj   => $prefs->get('genre_group_match_adjustment'),
                         maxbpmdiff      => $prefs->get('max_bpm_diff'),
-                        maxloudnessdiff => $prefs->get('max_loudness_diff'),
                         filterkey       => $prefs->get('filter_key'),
                         filterattrib    => $prefs->get('filter_attrib'),
                         mpath           => @$mediaDirs[0]
@@ -462,7 +467,6 @@ sub _getSimilarData {
                         nogenrematchadj => $prefs->get('no_genre_match_adjustment'),
                         genregroupadj   => $prefs->get('genre_group_match_adjustment'),
                         maxbpmdiff      => $prefs->get('max_bpm_diff'),
-                        maxloudnessdiff => $prefs->get('max_loudness_diff'),
                         filterkey       => $prefs->get('filter_key'),
                         filterattrib    => $prefs->get('filter_attrib'),
                         mpath           => @$mediaDirs[0]

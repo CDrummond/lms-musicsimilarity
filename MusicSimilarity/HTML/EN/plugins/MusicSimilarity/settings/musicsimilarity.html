@@ -56,35 +56,30 @@
             <input type="text" class="stdedit sliderInput_0_20_1" name="pref_genre_group_match_adjustment" id="genre_group_match_adjustment" value="[% prefs.pref_genre_group_match_adjustment %]" size="5">
         [% END %]
 
-        [% IF prefs.essentia_level > 0 || prefs.essentia_level == -1 %]
+        [% IF filterBpm || filterKey || filterAttrib %]
             <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
-            <b>[% "MUSICSIMILARITY_ATTRIBUTE_HANDLING" | string %]</b><br/>
-            <div style="opacity:0.6">[% "MUSICSIMILARITY_ATTRIBUTE_HANDLING_NOTE" | string %]</div><br/>
-
+        [% END %]
+        [% IF filterBpm %]
             [% WRAPPER settingGroup title="MUSICSIMILARITY_MAX_BPM_DIFF" desc="MUSICSIMILARITY_MAX_BPM_DIFF_DESC" %]
                 <input type="text" class="stdedit sliderInput_10_150_10" name="pref_max_bpm_diff" id="max_bpm_diff" value="[% prefs.pref_max_bpm_diff %]" size="5">
             [% END %]
+        [% END %]
 
+        [% IF filterKey %]
             [% WRAPPER settingGroup title="MUSICSIMILARITY_FILTER_KEY" desc="MUSICSIMILARITY_FILTER_KEY_DESC" %]
                 <select class="stdedit" name="pref_filter_key" id="filter_key">
                     <option [% IF NOT prefs.filter_key %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
                     <option [% IF prefs.filter_key %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
                 </select>
             [% END %]
-
-            [% IF prefs.essentia_level == 2 %]
-                [% WRAPPER settingGroup title="MUSICSIMILARITY_FILTER_ATTRIB" desc="MUSICSIMILARITY_FILTER_ATTRIB_DESC" %]
-                    <select class="stdedit" name="pref_filter_attrib" id="filter_attrib">
-                        <option [% IF NOT prefs.filter_attrib %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
-                        <option [% IF prefs.filter_attrib %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
-                    </select>
-                [% END %]
-            [% END %]
         [% END %]
 
-        [% IF prefs.essentia_level == 0 && prefs.bliss_supported >=1 %]
-            [% WRAPPER settingGroup title="MUSICSIMILARITY_MAX_BPM_DIFF" desc="MUSICSIMILARITY_MAX_BPM_DIFF_DESC" %]
-                <input type="text" class="stdedit sliderInput_10_150_10" name="pref_max_bpm_diff" id="max_bpm_diff" value="[% prefs.pref_max_bpm_diff %]" size="5">
+        [% IF filterAttrib %]
+            [% WRAPPER settingGroup title="MUSICSIMILARITY_FILTER_ATTRIB" desc="MUSICSIMILARITY_FILTER_ATTRIB_DESC" %]
+                <select class="stdedit" name="pref_filter_attrib" id="filter_attrib">
+                    <option [% IF NOT prefs.filter_attrib %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
+                    <option [% IF prefs.filter_attrib %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
+                </select>
             [% END %]
         [% END %]
 

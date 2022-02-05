@@ -123,12 +123,6 @@ MUSICSIMILARITY_GENRE_GROUP_MATCH_ADJUSTMENT_DESC
 MUSICSIMILARITY_GENRE_NOTE
 	EN	Music similarity is based upon the tonal attributes of a track. However, to aid with this genres may also be used, and you can configure this behaviour below. You may create 'genre groups' to indicate that genres are releated (e.g. 'Hard Rock' and 'Rock'). If you then enable filtering by genre, this will allow tracks with different genres but within the same group to be accepted. You may also aid the similarity score by setting values for 'Genre no match adjustment' (tracks that are of different genres, and not in the same genre group, will have their similarity score adjusted (a higher value implies more difference)), and 'Genre group match adjustment' (tracks are of a different genre, but are within the same genre group). If a track has a similarity score to another of (e.g.) 5 but it is not in the same genre group and 'Genre no match adjustment' is set to 15, then the actual score would be 20 - i.e. making it appear more dissimilar. This genre adjustment is applied regardless of whether 'Restrict genres' is enabled or not.
 
-MUSICSIMILARITY_ATTRIBUTE_HANDLING
-	EN	Attribute handling
-
-MUSICSIMILARITY_ATTRIBUTE_HANDLING_NOTE
-	EN	Your track's have been anlysed for tonal attributes (e.g. BPM, Key, etc), these can then be used to filter tracks, etc.
-
 MUSICSIMILARITY_MAX_BPM_DIFF
 	EN	Max BPM difference
 
