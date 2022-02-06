@@ -1,8 +1,9 @@
 0.0.4
 -----
 1. When getting 5 seed tracks select 5 random tracks from last 10 of queue.
-2. Query music-similarity at start-up for Essentia support level.
+2. Query music-similarity at start-up for Essentia level and Bliss support.
 3. Decode file:// URL and re-encode so that match LMS's encoding.
+4. Add ability to create 'Smart Mixes' if Essentia high-level analysis found.
 
 0.0.3
 -----
