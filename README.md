@@ -1,3 +1,5 @@
+**DEPRECATED** Please use [Bliss Mixer](https://github.com/CDrummond/bliss-mixer) instead.
+
 # Music Similarity
 
 Music Similarity plugin for LMS. Provides a mixer for `Don't Stop The Music`.
